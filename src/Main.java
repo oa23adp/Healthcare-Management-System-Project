@@ -6,7 +6,7 @@ public class Main {
         System.out.println(f.toString());
 
 
-        Appointment a  = new Appointment("A001","P001","C001","S001",2025-09-20,"09:00",15,"Routine Consultation","Scheduled","Annual health check","Patient due for routine screening",2025-09-15,2025-09-15)
+
     }
 
 }
