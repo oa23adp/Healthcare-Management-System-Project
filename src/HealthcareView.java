@@ -32,6 +32,10 @@ public class HealthcareView extends JFrame {
         setLocationRelativeTo(null);
 
         initComponents();
+
+        pack();
+        setMinimumSize(new Dimension(1000, 650));
+        setLocationRelativeTo(null);
     }
 
     public void setController(HealthcareController controller) {
