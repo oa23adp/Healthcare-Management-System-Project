@@ -168,26 +168,45 @@ public class HealthcareView extends JFrame {
         saveButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String firstName = firstNameField.getText();
-                String email = .getText();
+                String lastName = lastNameField.getText();
+                String dob = dobField.getText();
+                String nhsNumber = nhsNoField.getText();
+                String gender = genderField.getText();
+                String phoneNumber = phoneNumberField.getText();
+                String email = emailField.getText();
+                String address = addressField.getText();
+                String postcode = postcodeField.getText();
+                String ecName = ecNameField.getText();
+                String ecNumber = ecNoField.getText();
+                String gpId = gpIdField.getText();
 
-                if (name.trim().isEmpty()) {
-                    showErrorMessage("Name is required");
+                if (firstName.isEmpty() || lastName.isEmpty() || dob.isEmpty() || nhsNumber.isEmpty()
+                        || gender.isEmpty() || phoneNumber.isEmpty() || email.isEmpty() || address.isEmpty()
+                        || postcode.isEmpty() || ecName.isEmpty() || ecNumber.isEmpty() || gpId.isEmpty()) {
+                    showErrorMessage("All fields are required. Please fill in every field.");
                     return;
                 }
 
-                if (addAuthorListener != null) {
-                    addAuthorListener.onAddAuthor(name, email);
+                if (addPatientListener != null) {
+                    addPatientListener.onAddPatient(
+                            firstName, lastName, dob, nhsNumber, gender,
+                            phoneNumber, email, address, postcode, ecName, ecNumber, gpId
+                    );
                 }
 
-                ArrayList<Author> allAuthors = controller.getAllAuthors();
-                Author newAuthor = allAuthors.get(allAuthors.size() - 1);
+                ArrayList<Patient> allPatients = controller.getAllPatients();
+                Patient newPatient = allPatients.get(allPatients.size() - 1);
+
 
                 Object[] row = {
-                        newAuthor.getAuthorId(),
-                        newAuthor.getName(),
-                        newAuthor.getEmail()
+                        newPatient.getPatientId(),
+                        newPatient.getFirstName(),
+                        newPatient.getLastName(),
+                        newPatient.getDateOfBirth(),
+                        newPatient.getNhsNumber(),
+                        newPatient.getPhoneNumber()
                 };
-                authorsTableModel.addRow(row);
+                patientsTableModel.addRow(row);
 
                 dialog.dispose();
             }
@@ -205,5 +224,12 @@ public class HealthcareView extends JFrame {
         dialog.add(panel);
         dialog.setVisible(true);
     }
+
+    // =================Listener Setters ===================
+
+
+
+
+
     }
 }
