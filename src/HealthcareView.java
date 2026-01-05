@@ -27,9 +27,7 @@ public class HealthcareView extends JFrame {
 
     public HealthcareView() {
         setTitle("Healthcare Management System - MVC Architecture");
-        setSize(900, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
 
         initComponents();
 
@@ -124,63 +122,63 @@ public class HealthcareView extends JFrame {
     }
     private void showAddPatientDialog() {
         JDialog dialog = new JDialog(this, "Add Patient", true);
-        dialog.setSize(400, 200);
+        dialog.pack();
         dialog.setLocationRelativeTo(this);
 
-        JPanel panel = new JPanel(new GridLayout(3, 2, 10, 10));
+        JPanel panel = new JPanel(new GridLayout(0, 2, 10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         panel.add(new JLabel("First Name:"));
-        JTextField firstNameField = new JTextField();
+        JTextField firstNameField = new JTextField(15);
         panel.add(firstNameField);
 
         panel.add(new JLabel("Last Name:"));
-        JTextField lastNameField = new JTextField();
+        JTextField lastNameField = new JTextField(15);
         panel.add(lastNameField);
 
         panel.add(new JLabel("Date of Birth (yyyy-MM-dd):"));
-        JTextField dobField = new JTextField();
+        JTextField dobField = new JTextField(15);
         panel.add(dobField);
 
         panel.add(new JLabel("NHS Number:"));
-        JTextField nhsNoField = new JTextField();
+        JTextField nhsNoField = new JTextField(15);
         panel.add(nhsNoField);
 
         panel.add(new JLabel("Gender:"));
-        JTextField genderField = new JTextField();
+        JTextField genderField = new JTextField(15);
         panel.add(genderField);
 
         panel.add(new JLabel("Phone Number:"));
-        JTextField phoneNumberField = new JTextField();
+        JTextField phoneNumberField = new JTextField(15);
         panel.add(phoneNumberField);
 
         panel.add(new JLabel("Email:"));
-        JTextField emailField = new JTextField();
+        JTextField emailField = new JTextField(15);
         panel.add(emailField);
 
         panel.add(new JLabel("Address:"));
-        JTextField addressField = new JTextField();
+        JTextField addressField = new JTextField(15);
         panel.add(addressField);
 
         panel.add(new JLabel("Postcode:"));
-        JTextField postcodeField = new JTextField();
+        JTextField postcodeField = new JTextField(15);
         panel.add(postcodeField);
 
         panel.add(new JLabel("Emergency Contact Name:"));
-        JTextField ecNameField = new JTextField();
+        JTextField ecNameField = new JTextField(15);
         panel.add(ecNameField);
 
         panel.add(new JLabel("Emergency Contact Number:"));
-        JTextField ecNoField = new JTextField();
+        JTextField ecNoField = new JTextField(15);
         panel.add(ecNoField);
 
         panel.add(new JLabel("Date Registered:"));
-        JTextField dateRegField = new JTextField();
+        JTextField dateRegField = new JTextField(15);
         panel.add(dateRegField);
 
 
         panel.add(new JLabel("GP Id:"));
-        JTextField gpIdField = new JTextField();
+        JTextField gpIdField = new JTextField(15);
         panel.add(gpIdField);
 
 
@@ -312,7 +310,10 @@ public class HealthcareView extends JFrame {
         panel.add(saveButton);
         panel.add(cancelButton);
 
-        dialog.add(panel);
+        dialog.setContentPane(new JScrollPane(panel));
+        dialog.pack();
+        dialog.setMinimumSize(new Dimension(520, 420)); // stops tiny dialog
+        dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
     }
 

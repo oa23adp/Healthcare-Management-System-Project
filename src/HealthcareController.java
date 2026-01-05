@@ -56,39 +56,14 @@ public class HealthcareController {
 
     //=============== Patient Handlers =============
 
-    private void handleAddPatient(
-            String firstName,
-            String lastName,
-            Date dateOfBirth,
-            String nhsNumber,
-            String gender,
-            String phoneNumber,
-            String email,
-            String address,
-            String postCode,
-            String emergencyContactName,
-            String emergencyContactNo,
-            Date dateRegistered,
-            String gpId
+    private void handleAddPatient(String firstName, String lastName, Date dateOfBirth, String nhsNumber, String gender,
+            String phoneNumber, String email, String address, String postCode, String emergencyContactName, String emergencyContactNo, Date dateRegistered, String gpId
     ) {
 
         String patientId = model.generatePatientId(); // e.g. P001
 
-        Patient patient = new Patient(
-                patientId,
-                firstName,
-                lastName,
-                dateOfBirth,
-                nhsNumber,
-                gender,
-                phoneNumber,
-                email,
-                address,
-                postCode,
-                emergencyContactName,
-                emergencyContactNo,
-                dateRegistered,
-                gpId
+        Patient patient = new Patient(patientId, firstName, lastName, dateOfBirth, nhsNumber, gender,
+                phoneNumber, email, address, postCode, emergencyContactName, emergencyContactNo, dateRegistered, gpId
         );
 
         model.addPatient(patient);
@@ -110,20 +85,9 @@ public class HealthcareController {
 
 
     interface PatientListener {
-        void onAddPatient(
-                String firstName,
-                String lastName,
-                Date dateOfBirth,
-                String nhsNumber,
-                String gender,
-                String phoneNumber,
-                String email,
-                String address,
-                String postcode,
-                String emergencyContactName,
-                String emergencyContactNo,
-                Date dateRegistered,
-                String gpId
+        void onAddPatient(String firstName, String lastName, Date dateOfBirth, String nhsNumber, String gender,
+                String phoneNumber, String email, String address, String postcode, String emergencyContactName, String emergencyContactNo,
+                Date dateRegistered, String gpId
         );
     }
 
