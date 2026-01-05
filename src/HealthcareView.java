@@ -5,6 +5,8 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.Date;
+import java.text.SimpleDateFormat;
 
 
 public class HealthcareView extends JFrame {
@@ -20,6 +22,7 @@ public class HealthcareView extends JFrame {
 
     //Listener References
     private PatientListener addPatientListener;
+    private Runnable onCloseListener;
 
 
     public HealthcareView() {
@@ -30,6 +33,12 @@ public class HealthcareView extends JFrame {
 
         initComponents();
     }
+
+    public void setController(HealthcareController controller) {
+        this.controller = controller;
+        loadPatientsData();
+    }
+
 
     private void loadPatientsData() {
 
@@ -50,6 +59,7 @@ public class HealthcareView extends JFrame {
                     patient.getPostCode(),
                     patient.getEmergencyContactName(),
                     patient.getEmergencyContactNo(),
+                    patient.getDateRegistered(),
                     patient.getGpId()
             };
             patientsTableModel.addRow(row);
@@ -82,7 +92,7 @@ public class HealthcareView extends JFrame {
         panel.add(titleLabel, BorderLayout.NORTH);
 
         String[] columns = {"Patient ID", "First Name", "Last Name", "Date of Birth","NHS Number","Gender","Phone Number",
-                            "Email","Address","Postcode","Emergency contact name","Emergency contact no","GP ID"};
+                            "Email","Address","Postcode","Emergency contact name","Emergency contact no","Date Registered","GP ID"};
         patientsTableModel = new DefaultTableModel(columns, 0) {
             public boolean isCellEditable(int row, int column) {
                 return false;
@@ -93,7 +103,10 @@ public class HealthcareView extends JFrame {
         JScrollPane scrollPane = new JScrollPane(patientsTable);
         panel.add(scrollPane, BorderLayout.CENTER);
 
-        JButton addButton = new JButton("Add Author");
+        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT)); // ✅ create it
+        JButton addButton = new JButton("Add Patient"); // ✅ rename
+        addButton.addActionListener(e -> showAddPatientDialog());
+
         addButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 showAddPatientDialog();
@@ -121,7 +134,7 @@ public class HealthcareView extends JFrame {
         JTextField lastNameField = new JTextField();
         panel.add(lastNameField);
 
-        panel.add(new JLabel("Date of Birth:"));
+        panel.add(new JLabel("Date of Birth (yyyy-MM-dd):"));
         JTextField dobField = new JTextField();
         panel.add(dobField);
 
@@ -157,6 +170,11 @@ public class HealthcareView extends JFrame {
         JTextField ecNoField = new JTextField();
         panel.add(ecNoField);
 
+        panel.add(new JLabel("Date Registered:"));
+        JTextField dateRegField = new JTextField();
+        panel.add(dateRegField);
+
+
         panel.add(new JLabel("GP Id:"));
         JTextField gpIdField = new JTextField();
         panel.add(gpIdField);
@@ -167,31 +185,100 @@ public class HealthcareView extends JFrame {
 
         saveButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String firstName = firstNameField.getText();
-                String lastName = lastNameField.getText();
-                String dob = dobField.getText();
-                String nhsNumber = nhsNoField.getText();
-                String gender = genderField.getText();
-                String phoneNumber = phoneNumberField.getText();
-                String email = emailField.getText();
-                String address = addressField.getText();
-                String postcode = postcodeField.getText();
-                String ecName = ecNameField.getText();
-                String ecNumber = ecNoField.getText();
-                String gpId = gpIdField.getText();
 
-                if (firstName.isEmpty() || lastName.isEmpty() || dob.isEmpty() || nhsNumber.isEmpty()
-                        || gender.isEmpty() || phoneNumber.isEmpty() || email.isEmpty() || address.isEmpty()
-                        || postcode.isEmpty() || ecName.isEmpty() || ecNumber.isEmpty() || gpId.isEmpty()) {
-                    showErrorMessage("All fields are required. Please fill in every field.");
+                String firstName = firstNameField.getText().trim();
+                if (firstName.isEmpty()) {
+                    showErrorMessage("First Name is required");
+                    return;
+                }
+
+                String lastName = lastNameField.getText().trim();
+                if (lastName.isEmpty()) {
+                    showErrorMessage("Last Name is required");
+                    return;
+                }
+
+
+                Date dob;
+                try {
+                    dob = new SimpleDateFormat("yyyy-MM-dd").parse(dobField.getText().trim());
+                } catch (Exception ex) {
+                    showErrorMessage("Invalid Date of Birth format (yyyy-MM-dd)");
+                    return;
+                }
+
+
+                String nhsNumber = nhsNoField.getText().trim();
+                if (nhsNumber.isEmpty()) {
+                    showErrorMessage("NHS Number is required");
+                    return;
+                }
+
+                String gender = genderField.getText().trim();
+                if (gender.isEmpty()) {
+                    showErrorMessage("Gender is required");
+                    return;
+                }
+
+                String phoneNumber = phoneNumberField.getText().trim();
+                if (phoneNumber.isEmpty()) {
+                    showErrorMessage("Phone Number is required");
+                    return;
+                }
+
+                String email = emailField.getText().trim();
+                if (email.isEmpty()) {
+                    showErrorMessage("Email is required");
+                    return;
+                }
+
+                String address = addressField.getText().trim();
+                if (address.isEmpty()) {
+                    showErrorMessage("Address is required");
+                    return;
+                }
+
+                String postcode = postcodeField.getText().trim();
+                if (postcode.isEmpty()) {
+                    showErrorMessage("Postcode is required");
+                    return;
+                }
+
+                String ecName = ecNameField.getText().trim();
+                if (ecName.isEmpty()) {
+                    showErrorMessage("Emergency Contact Name is required");
+                    return;
+                }
+
+                String ecNumber = ecNoField.getText().trim();
+                if (ecNumber.isEmpty()) {
+                    showErrorMessage("Emergency Contact Number is required");
+                    return;
+                }
+
+                Date dateRegistered;
+                try {
+                    dateRegistered = new SimpleDateFormat("yyyy-MM-dd").parse(dateRegField.getText().trim());
+                } catch (Exception ex) {
+                    showErrorMessage("Invalid Date Registered format (yyyy-MM-dd)");
+                    return;
+                }
+
+
+
+                String gpId = gpIdField.getText().trim();
+                if (gpId.isEmpty()) {
+                    showErrorMessage("GP ID is required");
                     return;
                 }
 
                 if (addPatientListener != null) {
                     addPatientListener.onAddPatient(
                             firstName, lastName, dob, nhsNumber, gender,
-                            phoneNumber, email, address, postcode, ecName, ecNumber, gpId
+                            phoneNumber, email, address, postcode,
+                            ecName, ecNumber, dateRegistered, gpId
                     );
+
                 }
 
                 ArrayList<Patient> allPatients = controller.getAllPatients();
@@ -227,9 +314,25 @@ public class HealthcareView extends JFrame {
 
     // =================Listener Setters ===================
 
+    public void setAddPatientListener(PatientListener listener) {
+        this.addPatientListener = listener;
+    }
+
+    public void setOnCloseListener(Runnable listener) {
+        this.onCloseListener = listener;
+    }
 
 
 
 
+
+    // ========== Utility Methods ==========
+
+    public void showSuccessMessage(String message) {
+        JOptionPane.showMessageDialog(this, message, "Success", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    public void showErrorMessage(String message) {
+        JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
     }
 }
