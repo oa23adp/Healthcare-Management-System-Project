@@ -208,6 +208,11 @@ public class HealthcareController {
         return model.getAllPrescriptions();
     }
 
+    public Prescription getPrescriptionById(String prescriptionId) {
+        return model.getPrescriptionById(prescriptionId);
+    }
+
+
 
 
 }

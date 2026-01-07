@@ -96,7 +96,7 @@ public class HealthcareModel {
     public boolean deletePatient(String patientId) {
         Patient removed = patients.remove(patientId);
         if (removed != null) {
-            savePatients(); // persist deletion immediately (optional but recommended)
+            savePatients();
             return true;
         }
         return false;
@@ -213,5 +213,14 @@ public class HealthcareModel {
     public ArrayList<Prescription> getAllPrescriptions() {
         return new ArrayList<>(prescriptions.values());
     }
+
+    public Prescription getPrescriptionById(String prescriptionId) {
+        return prescriptions.get(prescriptionId);
+    }
+
+
+
+    // ================== Appointment Management =======================
+
 
 }

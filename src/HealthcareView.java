@@ -32,6 +32,8 @@ public class HealthcareView extends JFrame {
 
 
 
+
+
     //Listener References
     private PatientListener addPatientListener;
     private Runnable onCloseListener;
@@ -531,9 +533,190 @@ public class HealthcareView extends JFrame {
             panel.add(buttons, BorderLayout.SOUTH);
             return panel;
         }
+        private void showAddClinicianDialog() {
+            JDialog dialog = new JDialog(this, "Add Clinician", true);
+            dialog.pack();
+            dialog.setLocationRelativeTo(this);
+
+            JPanel panel = new JPanel(new GridLayout(0, 2, 10, 10));
+            panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+            JTextField idField = new JTextField(15);
+            JTextField firstField = new JTextField(15);
+            JTextField lastField = new JTextField(15);
+            JTextField titleField = new JTextField(15);
+            JTextField specField = new JTextField(15);
+            JTextField gmcField = new JTextField(15);
+            JTextField phoneField = new JTextField(15);
+            JTextField emailField = new JTextField(15);
+            JTextField workplaceIdField = new JTextField(15);
+            JTextField workplaceTypeField = new JTextField(15);
+            JTextField statusField = new JTextField(15);
+            JTextField startDateField = new JTextField(15);
+
+            panel.add(new JLabel("Clinician ID:")); panel.add(idField);
+            panel.add(new JLabel("First Name:")); panel.add(firstField);
+            panel.add(new JLabel("Last Name:")); panel.add(lastField);
+            panel.add(new JLabel("Title:")); panel.add(titleField);
+            panel.add(new JLabel("Speciality:")); panel.add(specField);
+            panel.add(new JLabel("GMC No:")); panel.add(gmcField);
+            panel.add(new JLabel("Phone Number:")); panel.add(phoneField);
+            panel.add(new JLabel("Email:")); panel.add(emailField);
+            panel.add(new JLabel("Workplace ID:")); panel.add(workplaceIdField);
+            panel.add(new JLabel("Workplace Type:")); panel.add(workplaceTypeField);
+            panel.add(new JLabel("Employment Status:")); panel.add(statusField);
+            panel.add(new JLabel("Start Date (yyyy/MM/dd):")); panel.add(startDateField);
+
+            JButton save = new JButton("Save");
+            JButton cancel = new JButton("Cancel");
+
+            save.addActionListener(e -> {
+                String id = idField.getText().trim();
+                if (id.isEmpty()) { showErrorMessage("Clinician ID is required"); return; }
+
+                String first = firstField.getText().trim();
+                if (first.isEmpty()) { showErrorMessage("First Name is required"); return; }
+
+                String last = lastField.getText().trim();
+                if (last.isEmpty()) { showErrorMessage("Last Name is required"); return; }
+
+                String title = titleField.getText().trim();
+                if (title.isEmpty()) { showErrorMessage("Title is required"); return; }
+
+                String spec = specField.getText().trim();
+                if (spec.isEmpty()) { showErrorMessage("Speciality is required"); return; }
+
+                String gmc = gmcField.getText().trim();
+                if (gmc.isEmpty()) { showErrorMessage("GMC No is required"); return; }
+
+                String phone = phoneField.getText().trim();
+                if (phone.isEmpty()) { showErrorMessage("Phone Number is required"); return; }
+
+                String email = emailField.getText().trim();
+                if (email.isEmpty()) { showErrorMessage("Email is required"); return; }
+
+                String wId = workplaceIdField.getText().trim();
+                if (wId.isEmpty()) { showErrorMessage("Workplace ID is required"); return; }
+
+                String wType = workplaceTypeField.getText().trim();
+                if (wType.isEmpty()) { showErrorMessage("Workplace Type is required"); return; }
+
+                String status = statusField.getText().trim();
+                if (status.isEmpty()) { showErrorMessage("Employment Status is required"); return; }
+
+                Date startDate;
+                try {
+                    startDate = new SimpleDateFormat("yyyy/MM/dd").parse(startDateField.getText().trim());
+                } catch (Exception ex) {
+                    showErrorMessage("Invalid Start Date format (yyyy/MM/dd)");
+                    return;
+                }
+
+                if (addClinicianListener != null) {
+                    addClinicianListener.onAddClinician(
+                            id, first, last, title, spec, gmc, phone, email, wId, wType, status, startDate
+                    );
+                }
+
+                dialog.dispose();
+            });
+
+            cancel.addActionListener(e -> dialog.dispose());
+
+            panel.add(save);
+            panel.add(cancel);
+
+            dialog.setContentPane(new JScrollPane(panel));
+            dialog.pack();
+            dialog.setMinimumSize(new Dimension(560, 420));
+            dialog.setLocationRelativeTo(this);
+            dialog.setVisible(true);
+        }
+        private void handleDeleteClinician() {
+            int row = cliniciansTable.getSelectedRow();
+            if (row == -1) {
+                showErrorMessage("Select a clinician first.");
+                return;
+            }
+
+            String clinicianId = cliniciansTableModel.getValueAt(row, 0).toString();
+
+            if (deleteClinicianListener != null) {
+                deleteClinicianListener.onDeleteClinician(clinicianId);
+            }
+        }
+        private void showEditClinicianDialog() {
+            int row = cliniciansTable.getSelectedRow();
+            if (row == -1) {
+                showErrorMessage("Select a clinician first.");
+                return;
+            }
+
+            String clinicianId = cliniciansTableModel.getValueAt(row, 0).toString();
+
+            // Prefill from table
+            JTextField firstField = new JTextField(cliniciansTableModel.getValueAt(row, 1).toString(), 15);
+            JTextField lastField = new JTextField(cliniciansTableModel.getValueAt(row, 2).toString(), 15);
+            JTextField titleField = new JTextField(cliniciansTableModel.getValueAt(row, 3).toString(), 15);
+            JTextField specField = new JTextField(cliniciansTableModel.getValueAt(row, 4).toString(), 15);
+            JTextField gmcField = new JTextField(cliniciansTableModel.getValueAt(row, 5).toString(), 15);
+            JTextField phoneField = new JTextField(cliniciansTableModel.getValueAt(row, 6).toString(), 15);
+            JTextField emailField = new JTextField(cliniciansTableModel.getValueAt(row, 7).toString(), 15);
+            JTextField wIdField = new JTextField(cliniciansTableModel.getValueAt(row, 8).toString(), 15);
+            JTextField wTypeField = new JTextField(cliniciansTableModel.getValueAt(row, 9).toString(), 15);
+            JTextField statusField = new JTextField(cliniciansTableModel.getValueAt(row, 10).toString(), 15);
+            JTextField startDateField = new JTextField(cliniciansTableModel.getValueAt(row, 11).toString(), 15);
+
+            Object[] fields = {
+                    "First Name:", firstField,
+                    "Last Name:", lastField,
+                    "Title:", titleField,
+                    "Speciality:", specField,
+                    "GMC No:", gmcField,
+                    "Phone:", phoneField,
+                    "Email:", emailField,
+                    "Workplace ID:", wIdField,
+                    "Workplace Type:", wTypeField,
+                    "Employment Status:", statusField,
+                    "Start Date (yyyy/MM/dd):", startDateField
+            };
+
+            int option = JOptionPane.showConfirmDialog(this, fields, "Modify Clinician " + clinicianId,
+                    JOptionPane.OK_CANCEL_OPTION);
+
+            if (option != JOptionPane.OK_OPTION) return;
+
+            Date startDate;
+            try {
+                startDate = new SimpleDateFormat("yyyy/MM/dd").parse(startDateField.getText().trim());
+            } catch (Exception ex) {
+                showErrorMessage("Invalid Start Date format (yyyy/MM/dd)");
+                return;
+            }
+
+            if (updateClinicianListener != null) {
+                updateClinicianListener.onUpdateClinician(
+                        clinicianId,
+                        firstField.getText().trim(),
+                        lastField.getText().trim(),
+                        titleField.getText().trim(),
+                        specField.getText().trim(),
+                        gmcField.getText().trim(),
+                        phoneField.getText().trim(),
+                        emailField.getText().trim(),
+                        wIdField.getText().trim(),
+                        wTypeField.getText().trim(),
+                        statusField.getText().trim(),
+                        startDate
+                );
+            }
+        }
 
 
-        // ================ Prescription Panel =================
+
+
+
+    // ================ Prescription Panel =================
         private JPanel createPrescriptionsPanel() {
             JPanel panel = new JPanel(new BorderLayout(10, 10));
             panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -559,264 +742,189 @@ public class HealthcareView extends JFrame {
             JButton addBtn = new JButton("Add Prescription");
             JButton editBtn = new JButton("Modify Prescription");
             JButton delBtn = new JButton("Delete Prescription");
+            JButton docBtn = new JButton("Generate Document");
+
+
 
             addBtn.addActionListener(e -> showAddPrescriptionDialog());
             editBtn.addActionListener(e -> showModifyPrescriptionDialog());
             delBtn.addActionListener(e -> handleDeletePrescription());
+            docBtn.addActionListener(e -> handleGeneratePrescriptionDocument());
+
 
             buttons.add(addBtn);
             buttons.add(editBtn);
             buttons.add(delBtn);
+            buttons.add(docBtn);
 
             panel.add(buttons, BorderLayout.SOUTH);
             return panel;
         }
+        private void showAddPrescriptionDialog() {
+            JDialog dialog = new JDialog(this, "Add Prescription", true);
 
+            JPanel panel = new JPanel(new GridLayout(0, 2, 10, 10));
+            panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
+            JTextField idField = new JTextField(15);
+            JTextField patientIdField = new JTextField(15);
+            JTextField clinicianIdField = new JTextField(15);
+            JTextField appointmentIdField = new JTextField(15);
+            JTextField prescriptionDateField = new JTextField(15);
+            JTextField medicationField = new JTextField(15);
+            JTextField dosageField = new JTextField(15);
+            JTextField frequencyField = new JTextField(15);
+            JTextField durationDaysField = new JTextField(15);
+            JTextField quantityField = new JTextField(15);
+            JTextField instructionsField = new JTextField(15);
+            JTextField pharmaciesField = new JTextField(15);
+            JTextField statusField = new JTextField(15);
+            JTextField dateIssuedField = new JTextField(15);
+            JTextField collectionDateField = new JTextField(15);
 
+            panel.add(new JLabel("Prescription ID:")); panel.add(idField);
+            panel.add(new JLabel("Patient ID:")); panel.add(patientIdField);
+            panel.add(new JLabel("Clinician ID:")); panel.add(clinicianIdField);
+            panel.add(new JLabel("Appointment ID:")); panel.add(appointmentIdField);
+            panel.add(new JLabel("Prescription Date (yyyy-MM-dd):")); panel.add(prescriptionDateField);
+            panel.add(new JLabel("Medication Name:")); panel.add(medicationField);
+            panel.add(new JLabel("Dosage:")); panel.add(dosageField);
+            panel.add(new JLabel("Frequency:")); panel.add(frequencyField);
+            panel.add(new JLabel("Duration Days:")); panel.add(durationDaysField);
+            panel.add(new JLabel("Quantity:")); panel.add(quantityField);
+            panel.add(new JLabel("Instructions:")); panel.add(instructionsField);
+            panel.add(new JLabel("Pharmacies:")); panel.add(pharmaciesField);
+            panel.add(new JLabel("Status:")); panel.add(statusField);
+            panel.add(new JLabel("Date Issued (yyyy-MM-dd):")); panel.add(dateIssuedField);
+            panel.add(new JLabel("Collection Date (yyyy-MM-dd):")); panel.add(collectionDateField);
 
-    private void showAddClinicianDialog() {
-        JDialog dialog = new JDialog(this, "Add Clinician", true);
-        dialog.pack();
-        dialog.setLocationRelativeTo(this);
+            JButton save = new JButton("Save");
+            JButton cancel = new JButton("Cancel");
 
-        JPanel panel = new JPanel(new GridLayout(0, 2, 10, 10));
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            save.addActionListener(e -> {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                sdf.setLenient(false);
 
-        JTextField idField = new JTextField(15);
-        JTextField firstField = new JTextField(15);
-        JTextField lastField = new JTextField(15);
-        JTextField titleField = new JTextField(15);
-        JTextField specField = new JTextField(15);
-        JTextField gmcField = new JTextField(15);
-        JTextField phoneField = new JTextField(15);
-        JTextField emailField = new JTextField(15);
-        JTextField workplaceIdField = new JTextField(15);
-        JTextField workplaceTypeField = new JTextField(15);
-        JTextField statusField = new JTextField(15);
-        JTextField startDateField = new JTextField(15);
+                String id = idField.getText().trim();
+                if (id.isEmpty()) { showErrorMessage("Prescription ID is required"); return; }
 
-        panel.add(new JLabel("Clinician ID:")); panel.add(idField);
-        panel.add(new JLabel("First Name:")); panel.add(firstField);
-        panel.add(new JLabel("Last Name:")); panel.add(lastField);
-        panel.add(new JLabel("Title:")); panel.add(titleField);
-        panel.add(new JLabel("Speciality:")); panel.add(specField);
-        panel.add(new JLabel("GMC No:")); panel.add(gmcField);
-        panel.add(new JLabel("Phone Number:")); panel.add(phoneField);
-        panel.add(new JLabel("Email:")); panel.add(emailField);
-        panel.add(new JLabel("Workplace ID:")); panel.add(workplaceIdField);
-        panel.add(new JLabel("Workplace Type:")); panel.add(workplaceTypeField);
-        panel.add(new JLabel("Employment Status:")); panel.add(statusField);
-        panel.add(new JLabel("Start Date (yyyy/MM/dd):")); panel.add(startDateField);
+                String patientId = patientIdField.getText().trim();
+                if (patientId.isEmpty()) { showErrorMessage("Patient ID is required"); return; }
 
-        JButton save = new JButton("Save");
-        JButton cancel = new JButton("Cancel");
+                String clinicianId = clinicianIdField.getText().trim();
+                if (clinicianId.isEmpty()) { showErrorMessage("Clinician ID is required"); return; }
 
-        save.addActionListener(e -> {
-            String id = idField.getText().trim();
-            if (id.isEmpty()) { showErrorMessage("Clinician ID is required"); return; }
+                String appointmentId = appointmentIdField.getText().trim();
+                if (appointmentId.isEmpty()) { showErrorMessage("Appointment ID is required"); return; }
 
-            String first = firstField.getText().trim();
-            if (first.isEmpty()) { showErrorMessage("First Name is required"); return; }
+                Date prescriptionDate;
+                Date dateIssued;
+                Date collectionDate;
+                try {
+                    prescriptionDate = sdf.parse(prescriptionDateField.getText().trim());
+                    dateIssued = sdf.parse(dateIssuedField.getText().trim());
+                    collectionDate = sdf.parse(collectionDateField.getText().trim());
+                } catch (Exception ex) {
+                    showErrorMessage("Invalid date format (use yyyy-MM-dd)");
+                    return;
+                }
 
-            String last = lastField.getText().trim();
-            if (last.isEmpty()) { showErrorMessage("Last Name is required"); return; }
+                String medication = medicationField.getText().trim();
+                if (medication.isEmpty()) { showErrorMessage("Medication Name is required"); return; }
 
-            String title = titleField.getText().trim();
-            if (title.isEmpty()) { showErrorMessage("Title is required"); return; }
+                String dosage = dosageField.getText().trim();
+                if (dosage.isEmpty()) { showErrorMessage("Dosage is required"); return; }
 
-            String spec = specField.getText().trim();
-            if (spec.isEmpty()) { showErrorMessage("Speciality is required"); return; }
+                String frequency = frequencyField.getText().trim();
+                if (frequency.isEmpty()) { showErrorMessage("Frequency is required"); return; }
 
-            String gmc = gmcField.getText().trim();
-            if (gmc.isEmpty()) { showErrorMessage("GMC No is required"); return; }
+                int durationDays;
+                try {
+                    durationDays = Integer.parseInt(durationDaysField.getText().trim());
+                } catch (Exception ex) {
+                    showErrorMessage("Duration Days must be a number");
+                    return;
+                }
 
-            String phone = phoneField.getText().trim();
-            if (phone.isEmpty()) { showErrorMessage("Phone Number is required"); return; }
+                String quantity = quantityField.getText().trim();
+                if (quantity.isEmpty()) { showErrorMessage("Quantity is required"); return; }
 
-            String email = emailField.getText().trim();
-            if (email.isEmpty()) { showErrorMessage("Email is required"); return; }
+                String instructions = instructionsField.getText().trim();
+                if (instructions.isEmpty()) { showErrorMessage("Instructions is required"); return; }
 
-            String wId = workplaceIdField.getText().trim();
-            if (wId.isEmpty()) { showErrorMessage("Workplace ID is required"); return; }
+                String pharmacies = pharmaciesField.getText().trim();
+                if (pharmacies.isEmpty()) { showErrorMessage("Pharmacies is required"); return; }
 
-            String wType = workplaceTypeField.getText().trim();
-            if (wType.isEmpty()) { showErrorMessage("Workplace Type is required"); return; }
+                String status = statusField.getText().trim();
+                if (status.isEmpty()) { showErrorMessage("Status is required"); return; }
 
-            String status = statusField.getText().trim();
-            if (status.isEmpty()) { showErrorMessage("Employment Status is required"); return; }
+                if (addPrescriptionListener != null) {
+                    addPrescriptionListener.onAddPrescription(
+                            id, patientId, clinicianId, appointmentId, prescriptionDate,
+                            medication, dosage, frequency, durationDays, quantity,
+                            instructions, pharmacies, status, dateIssued, collectionDate
+                    );
+                }
 
-            Date startDate;
-            try {
-                startDate = new SimpleDateFormat("yyyy/MM/dd").parse(startDateField.getText().trim());
-            } catch (Exception ex) {
-                showErrorMessage("Invalid Start Date format (yyyy/MM/dd)");
-                return;
-            }
+                dialog.dispose();
+            });
 
-            if (addClinicianListener != null) {
-                addClinicianListener.onAddClinician(
-                        id, first, last, title, spec, gmc, phone, email, wId, wType, status, startDate
-                );
-            }
+            cancel.addActionListener(e -> dialog.dispose());
 
-            dialog.dispose();
-        });
+            panel.add(save);
+            panel.add(cancel);
 
-        cancel.addActionListener(e -> dialog.dispose());
-
-        panel.add(save);
-        panel.add(cancel);
-
-        dialog.setContentPane(new JScrollPane(panel));
-        dialog.pack();
-        dialog.setMinimumSize(new Dimension(560, 420));
-        dialog.setLocationRelativeTo(this);
-        dialog.setVisible(true);
-    }
-    private void handleDeleteClinician() {
-        int row = cliniciansTable.getSelectedRow();
-        if (row == -1) {
-            showErrorMessage("Select a clinician first.");
-            return;
+            dialog.setContentPane(new JScrollPane(panel));
+            dialog.pack();
+            dialog.setMinimumSize(new Dimension(620, 520));
+            dialog.setLocationRelativeTo(this);
+            dialog.setVisible(true);
         }
+        private void showModifyPrescriptionDialog() {
+            int row = prescriptionsTable.getSelectedRow();
+            if (row == -1) { showErrorMessage("Select a prescription first."); return; }
 
-        String clinicianId = cliniciansTableModel.getValueAt(row, 0).toString();
+            String id = prescriptionsTableModel.getValueAt(row, 0).toString();
 
-        if (deleteClinicianListener != null) {
-            deleteClinicianListener.onDeleteClinician(clinicianId);
-        }
-    }
-    private void showEditClinicianDialog() {
-        int row = cliniciansTable.getSelectedRow();
-        if (row == -1) {
-            showErrorMessage("Select a clinician first.");
-            return;
-        }
+            JTextField patientIdField = new JTextField(prescriptionsTableModel.getValueAt(row, 1).toString(), 15);
+            JTextField clinicianIdField = new JTextField(prescriptionsTableModel.getValueAt(row, 2).toString(), 15);
+            JTextField appointmentIdField = new JTextField(prescriptionsTableModel.getValueAt(row, 3).toString(), 15);
+            JTextField prescriptionDateField = new JTextField(prescriptionsTableModel.getValueAt(row, 4).toString(), 15);
+            JTextField medicationField = new JTextField(prescriptionsTableModel.getValueAt(row, 5).toString(), 15);
+            JTextField dosageField = new JTextField(prescriptionsTableModel.getValueAt(row, 6).toString(), 15);
+            JTextField frequencyField = new JTextField(prescriptionsTableModel.getValueAt(row, 7).toString(), 15);
+            JTextField durationDaysField = new JTextField(prescriptionsTableModel.getValueAt(row, 8).toString(), 15);
+            JTextField quantityField = new JTextField(prescriptionsTableModel.getValueAt(row, 9).toString(), 15);
+            JTextField instructionsField = new JTextField(prescriptionsTableModel.getValueAt(row, 10).toString(), 15);
+            JTextField pharmaciesField = new JTextField(prescriptionsTableModel.getValueAt(row, 11).toString(), 15);
+            JTextField statusField = new JTextField(prescriptionsTableModel.getValueAt(row, 12).toString(), 15);
+            JTextField dateIssuedField = new JTextField(prescriptionsTableModel.getValueAt(row, 13).toString(), 15);
+            JTextField collectionDateField = new JTextField(prescriptionsTableModel.getValueAt(row, 14).toString(), 15);
 
-        String clinicianId = cliniciansTableModel.getValueAt(row, 0).toString();
+            Object[] fields = {
+                    "Patient ID:", patientIdField,
+                    "Clinician ID:", clinicianIdField,
+                    "Appointment ID:", appointmentIdField,
+                    "Prescription Date (yyyy-MM-dd):", prescriptionDateField,
+                    "Medication Name:", medicationField,
+                    "Dosage:", dosageField,
+                    "Frequency:", frequencyField,
+                    "Duration Days:", durationDaysField,
+                    "Quantity:", quantityField,
+                    "Instructions:", instructionsField,
+                    "Pharmacies:", pharmaciesField,
+                    "Status:", statusField,
+                    "Date Issued (yyyy-MM-dd):", dateIssuedField,
+                    "Collection Date (yyyy-MM-dd):", collectionDateField
+            };
 
-        // Prefill from table
-        JTextField firstField = new JTextField(cliniciansTableModel.getValueAt(row, 1).toString(), 15);
-        JTextField lastField = new JTextField(cliniciansTableModel.getValueAt(row, 2).toString(), 15);
-        JTextField titleField = new JTextField(cliniciansTableModel.getValueAt(row, 3).toString(), 15);
-        JTextField specField = new JTextField(cliniciansTableModel.getValueAt(row, 4).toString(), 15);
-        JTextField gmcField = new JTextField(cliniciansTableModel.getValueAt(row, 5).toString(), 15);
-        JTextField phoneField = new JTextField(cliniciansTableModel.getValueAt(row, 6).toString(), 15);
-        JTextField emailField = new JTextField(cliniciansTableModel.getValueAt(row, 7).toString(), 15);
-        JTextField wIdField = new JTextField(cliniciansTableModel.getValueAt(row, 8).toString(), 15);
-        JTextField wTypeField = new JTextField(cliniciansTableModel.getValueAt(row, 9).toString(), 15);
-        JTextField statusField = new JTextField(cliniciansTableModel.getValueAt(row, 10).toString(), 15);
-        JTextField startDateField = new JTextField(cliniciansTableModel.getValueAt(row, 11).toString(), 15);
+            int option = JOptionPane.showConfirmDialog(this, fields, "Modify Prescription " + id, JOptionPane.OK_CANCEL_OPTION);
+            if (option != JOptionPane.OK_OPTION) return;
 
-        Object[] fields = {
-                "First Name:", firstField,
-                "Last Name:", lastField,
-                "Title:", titleField,
-                "Speciality:", specField,
-                "GMC No:", gmcField,
-                "Phone:", phoneField,
-                "Email:", emailField,
-                "Workplace ID:", wIdField,
-                "Workplace Type:", wTypeField,
-                "Employment Status:", statusField,
-                "Start Date (yyyy/MM/dd):", startDateField
-        };
-
-        int option = JOptionPane.showConfirmDialog(this, fields, "Modify Clinician " + clinicianId,
-                JOptionPane.OK_CANCEL_OPTION);
-
-        if (option != JOptionPane.OK_OPTION) return;
-
-        Date startDate;
-        try {
-            startDate = new SimpleDateFormat("yyyy/MM/dd").parse(startDateField.getText().trim());
-        } catch (Exception ex) {
-            showErrorMessage("Invalid Start Date format (yyyy/MM/dd)");
-            return;
-        }
-
-        if (updateClinicianListener != null) {
-            updateClinicianListener.onUpdateClinician(
-                    clinicianId,
-                    firstField.getText().trim(),
-                    lastField.getText().trim(),
-                    titleField.getText().trim(),
-                    specField.getText().trim(),
-                    gmcField.getText().trim(),
-                    phoneField.getText().trim(),
-                    emailField.getText().trim(),
-                    wIdField.getText().trim(),
-                    wTypeField.getText().trim(),
-                    statusField.getText().trim(),
-                    startDate
-            );
-        }
-    }
-
-
-
-
-    private void showAddPrescriptionDialog() {
-        JDialog dialog = new JDialog(this, "Add Prescription", true);
-
-        JPanel panel = new JPanel(new GridLayout(0, 2, 10, 10));
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-        JTextField idField = new JTextField(15);
-        JTextField patientIdField = new JTextField(15);
-        JTextField clinicianIdField = new JTextField(15);
-        JTextField appointmentIdField = new JTextField(15);
-        JTextField prescriptionDateField = new JTextField(15);
-        JTextField medicationField = new JTextField(15);
-        JTextField dosageField = new JTextField(15);
-        JTextField frequencyField = new JTextField(15);
-        JTextField durationDaysField = new JTextField(15);
-        JTextField quantityField = new JTextField(15);
-        JTextField instructionsField = new JTextField(15);
-        JTextField pharmaciesField = new JTextField(15);
-        JTextField statusField = new JTextField(15);
-        JTextField dateIssuedField = new JTextField(15);
-        JTextField collectionDateField = new JTextField(15);
-
-        panel.add(new JLabel("Prescription ID:")); panel.add(idField);
-        panel.add(new JLabel("Patient ID:")); panel.add(patientIdField);
-        panel.add(new JLabel("Clinician ID:")); panel.add(clinicianIdField);
-        panel.add(new JLabel("Appointment ID:")); panel.add(appointmentIdField);
-        panel.add(new JLabel("Prescription Date (yyyy-MM-dd):")); panel.add(prescriptionDateField);
-        panel.add(new JLabel("Medication Name:")); panel.add(medicationField);
-        panel.add(new JLabel("Dosage:")); panel.add(dosageField);
-        panel.add(new JLabel("Frequency:")); panel.add(frequencyField);
-        panel.add(new JLabel("Duration Days:")); panel.add(durationDaysField);
-        panel.add(new JLabel("Quantity:")); panel.add(quantityField);
-        panel.add(new JLabel("Instructions:")); panel.add(instructionsField);
-        panel.add(new JLabel("Pharmacies:")); panel.add(pharmaciesField);
-        panel.add(new JLabel("Status:")); panel.add(statusField);
-        panel.add(new JLabel("Date Issued (yyyy-MM-dd):")); panel.add(dateIssuedField);
-        panel.add(new JLabel("Collection Date (yyyy-MM-dd):")); panel.add(collectionDateField);
-
-        JButton save = new JButton("Save");
-        JButton cancel = new JButton("Cancel");
-
-        save.addActionListener(e -> {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             sdf.setLenient(false);
 
-            String id = idField.getText().trim();
-            if (id.isEmpty()) { showErrorMessage("Prescription ID is required"); return; }
-
-            String patientId = patientIdField.getText().trim();
-            if (patientId.isEmpty()) { showErrorMessage("Patient ID is required"); return; }
-
-            String clinicianId = clinicianIdField.getText().trim();
-            if (clinicianId.isEmpty()) { showErrorMessage("Clinician ID is required"); return; }
-
-            String appointmentId = appointmentIdField.getText().trim();
-            if (appointmentId.isEmpty()) { showErrorMessage("Appointment ID is required"); return; }
-
-            Date prescriptionDate;
-            Date dateIssued;
-            Date collectionDate;
+            Date prescriptionDate, dateIssued, collectionDate;
             try {
                 prescriptionDate = sdf.parse(prescriptionDateField.getText().trim());
                 dateIssued = sdf.parse(dateIssuedField.getText().trim());
@@ -826,15 +934,6 @@ public class HealthcareView extends JFrame {
                 return;
             }
 
-            String medication = medicationField.getText().trim();
-            if (medication.isEmpty()) { showErrorMessage("Medication Name is required"); return; }
-
-            String dosage = dosageField.getText().trim();
-            if (dosage.isEmpty()) { showErrorMessage("Dosage is required"); return; }
-
-            String frequency = frequencyField.getText().trim();
-            if (frequency.isEmpty()) { showErrorMessage("Frequency is required"); return; }
-
             int durationDays;
             try {
                 durationDays = Integer.parseInt(durationDaysField.getText().trim());
@@ -843,137 +942,111 @@ public class HealthcareView extends JFrame {
                 return;
             }
 
-            String quantity = quantityField.getText().trim();
-            if (quantity.isEmpty()) { showErrorMessage("Quantity is required"); return; }
-
-            String instructions = instructionsField.getText().trim();
-            if (instructions.isEmpty()) { showErrorMessage("Instructions is required"); return; }
-
-            String pharmacies = pharmaciesField.getText().trim();
-            if (pharmacies.isEmpty()) { showErrorMessage("Pharmacies is required"); return; }
-
-            String status = statusField.getText().trim();
-            if (status.isEmpty()) { showErrorMessage("Status is required"); return; }
-
-            if (addPrescriptionListener != null) {
-                addPrescriptionListener.onAddPrescription(
-                        id, patientId, clinicianId, appointmentId, prescriptionDate,
-                        medication, dosage, frequency, durationDays, quantity,
-                        instructions, pharmacies, status, dateIssued, collectionDate
+            if (updatePrescriptionListener != null) {
+                updatePrescriptionListener.onUpdatePrescription(
+                        id,
+                        patientIdField.getText().trim(),
+                        clinicianIdField.getText().trim(),
+                        appointmentIdField.getText().trim(),
+                        prescriptionDate,
+                        medicationField.getText().trim(),
+                        dosageField.getText().trim(),
+                        frequencyField.getText().trim(),
+                        durationDays,
+                        quantityField.getText().trim(),
+                        instructionsField.getText().trim(),
+                        pharmaciesField.getText().trim(),
+                        statusField.getText().trim(),
+                        dateIssued,
+                        collectionDate
                 );
             }
+        }
+        private void handleDeletePrescription() {
+            int row = prescriptionsTable.getSelectedRow();
+            if (row == -1) { showErrorMessage("Select a prescription first."); return; }
 
-            dialog.dispose();
-        });
+            String id = prescriptionsTableModel.getValueAt(row, 0).toString();
 
-        cancel.addActionListener(e -> dialog.dispose());
+            if (deletePrescriptionListener != null) {
+                deletePrescriptionListener.onDeletePrescription(id);
+            }
+        }
+        private void handleGeneratePrescriptionDocument() {
+            int row = prescriptionsTable.getSelectedRow();
+            if (row == -1) {
+                showErrorMessage("Select a prescription first.");
+                return;
+            }
 
-        panel.add(save);
-        panel.add(cancel);
+            String prescriptionId = prescriptionsTableModel.getValueAt(row, 0).toString();
 
-        dialog.setContentPane(new JScrollPane(panel));
-        dialog.pack();
-        dialog.setMinimumSize(new Dimension(620, 520));
-        dialog.setLocationRelativeTo(this);
-        dialog.setVisible(true);
-    }
+            Prescription p = controller.getPrescriptionById(prescriptionId);
+            if (p == null) {
+                showErrorMessage("Prescription not found.");
+                return;
+            }
 
+            JFileChooser chooser = new JFileChooser();
+            chooser.setDialogTitle("Save Prescription Document");
+            chooser.setSelectedFile(new java.io.File("Prescription_" + prescriptionId + ".txt"));
 
+            int choice = chooser.showSaveDialog(this);
+            if (choice != JFileChooser.APPROVE_OPTION) return;
 
-    private void showModifyPrescriptionDialog() {
-        int row = prescriptionsTable.getSelectedRow();
-        if (row == -1) { showErrorMessage("Select a prescription first."); return; }
+            java.io.File file = chooser.getSelectedFile();
 
-        String id = prescriptionsTableModel.getValueAt(row, 0).toString();
+            try {
+                String content = buildPrescriptionDocumentText(p);
 
-        JTextField patientIdField = new JTextField(prescriptionsTableModel.getValueAt(row, 1).toString(), 15);
-        JTextField clinicianIdField = new JTextField(prescriptionsTableModel.getValueAt(row, 2).toString(), 15);
-        JTextField appointmentIdField = new JTextField(prescriptionsTableModel.getValueAt(row, 3).toString(), 15);
-        JTextField prescriptionDateField = new JTextField(prescriptionsTableModel.getValueAt(row, 4).toString(), 15);
-        JTextField medicationField = new JTextField(prescriptionsTableModel.getValueAt(row, 5).toString(), 15);
-        JTextField dosageField = new JTextField(prescriptionsTableModel.getValueAt(row, 6).toString(), 15);
-        JTextField frequencyField = new JTextField(prescriptionsTableModel.getValueAt(row, 7).toString(), 15);
-        JTextField durationDaysField = new JTextField(prescriptionsTableModel.getValueAt(row, 8).toString(), 15);
-        JTextField quantityField = new JTextField(prescriptionsTableModel.getValueAt(row, 9).toString(), 15);
-        JTextField instructionsField = new JTextField(prescriptionsTableModel.getValueAt(row, 10).toString(), 15);
-        JTextField pharmaciesField = new JTextField(prescriptionsTableModel.getValueAt(row, 11).toString(), 15);
-        JTextField statusField = new JTextField(prescriptionsTableModel.getValueAt(row, 12).toString(), 15);
-        JTextField dateIssuedField = new JTextField(prescriptionsTableModel.getValueAt(row, 13).toString(), 15);
-        JTextField collectionDateField = new JTextField(prescriptionsTableModel.getValueAt(row, 14).toString(), 15);
+                try (java.io.FileWriter fw = new java.io.FileWriter(file)) {
+                    fw.write(content);
+                }
 
-        Object[] fields = {
-                "Patient ID:", patientIdField,
-                "Clinician ID:", clinicianIdField,
-                "Appointment ID:", appointmentIdField,
-                "Prescription Date (yyyy-MM-dd):", prescriptionDateField,
-                "Medication Name:", medicationField,
-                "Dosage:", dosageField,
-                "Frequency:", frequencyField,
-                "Duration Days:", durationDaysField,
-                "Quantity:", quantityField,
-                "Instructions:", instructionsField,
-                "Pharmacies:", pharmaciesField,
-                "Status:", statusField,
-                "Date Issued (yyyy-MM-dd):", dateIssuedField,
-                "Collection Date (yyyy-MM-dd):", collectionDateField
-        };
+                showSuccessMessage("Document saved: " + file.getAbsolutePath());
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                showErrorMessage("Failed to generate document.");
+            }
+        }
+        private String buildPrescriptionDocumentText(Prescription p) {
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
 
-        int option = JOptionPane.showConfirmDialog(this, fields, "Modify Prescription " + id, JOptionPane.OK_CANCEL_OPTION);
-        if (option != JOptionPane.OK_OPTION) return;
+            String prescDate = (p.getPrescriptionDate() == null) ? "" : sdf.format(p.getPrescriptionDate());
+            String issuedDate = (p.getDateIssued() == null) ? "" : sdf.format(p.getDateIssued());
+            String collectionDate = (p.getCollectionDate() == null) ? "" : sdf.format(p.getCollectionDate());
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        sdf.setLenient(false);
+            // Optional: pull names from model if you want (patient/clinician lookup)
+            // For now this uses IDs and the data inside the prescription.
 
-        Date prescriptionDate, dateIssued, collectionDate;
-        try {
-            prescriptionDate = sdf.parse(prescriptionDateField.getText().trim());
-            dateIssued = sdf.parse(dateIssuedField.getText().trim());
-            collectionDate = sdf.parse(collectionDateField.getText().trim());
-        } catch (Exception ex) {
-            showErrorMessage("Invalid date format (use yyyy-MM-dd)");
-            return;
+            return ""
+                    + "========================================\n"
+                    + "            PRESCRIPTION DOCUMENT        \n"
+                    + "========================================\n\n"
+                    + "Prescription ID: " + p.getPrescriptionID() + "\n"
+                    + "Patient ID:      " + p.getPatientID() + "\n"
+                    + "Clinician ID:    " + p.getClinicianID() + "\n"
+                    + "Appointment ID:  " + p.getAppointmentID() + "\n\n"
+                    + "Prescription Date: " + prescDate + "\n"
+                    + "Date Issued:       " + issuedDate + "\n"
+                    + "Collection Date:   " + collectionDate + "\n\n"
+                    + "Medication:      " + p.getMedicationName() + "\n"
+                    + "Dosage:          " + p.getDosage() + "\n"
+                    + "Frequency:       " + p.getFrequency() + "\n"
+                    + "Duration (days): " + p.getDurationDays() + "\n"
+                    + "Quantity:        " + p.getQuantity() + "\n\n"
+                    + "Instructions:\n"
+                    + p.getInstructions() + "\n\n"
+                    + "Pharmacy/Pharmacies:\n"
+                    + p.getPharmacies() + "\n\n"
+                    + "Status: " + p.getStatus() + "\n\n"
+                    + "----------------------------------------\n"
+                    + "Signature (Clinician): __________________\n"
+                    + "Date: _________________________________\n"
+                    + "========================================\n";
         }
 
-        int durationDays;
-        try {
-            durationDays = Integer.parseInt(durationDaysField.getText().trim());
-        } catch (Exception ex) {
-            showErrorMessage("Duration Days must be a number");
-            return;
-        }
 
-        if (updatePrescriptionListener != null) {
-            updatePrescriptionListener.onUpdatePrescription(
-                    id,
-                    patientIdField.getText().trim(),
-                    clinicianIdField.getText().trim(),
-                    appointmentIdField.getText().trim(),
-                    prescriptionDate,
-                    medicationField.getText().trim(),
-                    dosageField.getText().trim(),
-                    frequencyField.getText().trim(),
-                    durationDays,
-                    quantityField.getText().trim(),
-                    instructionsField.getText().trim(),
-                    pharmaciesField.getText().trim(),
-                    statusField.getText().trim(),
-                    dateIssued,
-                    collectionDate
-            );
-        }
-    }
-
-
-    private void handleDeletePrescription() {
-        int row = prescriptionsTable.getSelectedRow();
-        if (row == -1) { showErrorMessage("Select a prescription first."); return; }
-
-        String id = prescriptionsTableModel.getValueAt(row, 0).toString();
-
-        if (deletePrescriptionListener != null) {
-            deletePrescriptionListener.onDeletePrescription(id);
-        }
-    }
 
 
 
