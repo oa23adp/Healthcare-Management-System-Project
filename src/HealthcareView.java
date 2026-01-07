@@ -119,32 +119,32 @@ public class HealthcareView extends JFrame {
             patientsTableModel.addRow(row);
         }
     }
-    public void reloadPrescriptionsData() {
-        if (controller == null) return;
+        public void reloadPrescriptionsData() {
+            if (controller == null) return;
 
-        prescriptionsTableModel.setRowCount(0);
+            prescriptionsTableModel.setRowCount(0);
 
-        for (Prescription p : controller.getAllPrescriptions()) {
+            for (Prescription p : controller.getAllPrescriptions()) {
 
-            prescriptionsTableModel.addRow(new Object[]{
-                    p.getPrescriptionID(),
-                    p.getPatientID(),
-                    p.getClinicianID(),
-                    p.getAppointmentID(),
-                    fmtDate(p.getPrescriptionDate()), // SAFE
-                    p.getMedicationName(),
-                    p.getDosage(),
-                    p.getFrequency(),
-                    p.getDurationDays(),
-                    p.getQuantity(),
-                    p.getInstructions(),
-                    p.getPharmacies(),
-                    p.getStatus(),
-                    fmtDate(p.getDateIssued()),        // SAFE
-                    fmtDate(p.getCollectionDate())     // SAFE
-            });
+                prescriptionsTableModel.addRow(new Object[]{
+                        p.getPrescriptionID(),
+                        p.getPatientID(),
+                        p.getClinicianID(),
+                        p.getAppointmentID(),
+                        fmtDate(p.getPrescriptionDate()), // SAFE
+                        p.getMedicationName(),
+                        p.getDosage(),
+                        p.getFrequency(),
+                        p.getDurationDays(),
+                        p.getQuantity(),
+                        p.getInstructions(),
+                        p.getPharmacies(),
+                        p.getStatus(),
+                        fmtDate(p.getDateIssued()),        // SAFE
+                        fmtDate(p.getCollectionDate())     // SAFE
+                });
+            }
         }
-    }
 
 
 
