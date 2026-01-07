@@ -113,6 +113,49 @@ public class HealthcareController {
         });
 
 
+        view.setAddPrescriptionListener((id, patientId, clinicianId, appointmentId, prescriptionDate,
+                                         medicationName, dosage, frequency, durationDays, quantity,
+                                         instructions, pharmacies, status, dateIssued, collectionDate) -> {
+
+            model.addPrescription(new Prescription(
+                    id, patientId, clinicianId, appointmentId, prescriptionDate,
+                    medicationName, dosage, frequency, durationDays, quantity,
+                    instructions, pharmacies, status, dateIssued, collectionDate
+            ));
+
+            view.showSuccessMessage("Prescription added successfully!");
+            view.reloadPrescriptionsData();
+        });
+
+        view.setUpdatePrescriptionListener((id, patientId, clinicianId, appointmentId, prescriptionDate,
+                                            medicationName, dosage, frequency, durationDays, quantity,
+                                            instructions, pharmacies, status, dateIssued, collectionDate) -> {
+
+            boolean ok = model.updatePrescription(id, new Prescription(
+                    id, patientId, clinicianId, appointmentId, prescriptionDate,
+                    medicationName, dosage, frequency, durationDays, quantity,
+                    instructions, pharmacies, status, dateIssued, collectionDate
+            ));
+
+            if (ok) {
+                view.showSuccessMessage("Prescription updated.");
+                view.reloadPrescriptionsData();
+            } else {
+                view.showErrorMessage("Prescription not found.");
+            }
+        });
+
+        view.setDeletePrescriptionListener(id -> {
+            boolean ok = model.deletePrescription(id);
+            if (ok) {
+                view.showSuccessMessage("Prescription deleted.");
+                view.reloadPrescriptionsData();
+            } else {
+                view.showErrorMessage("Prescription not found.");
+            }
+        });
+
+
 
     }
 
@@ -161,6 +204,11 @@ public class HealthcareController {
         return model.getAllClinicians();
     }
 
+    public ArrayList<Prescription> getAllPrescriptions() {
+        return model.getAllPrescriptions();
+    }
+
+
 
 }
 
@@ -199,6 +247,25 @@ public class HealthcareController {
     interface ClinicianDeleteListener {
         void onDeleteClinician(String clinicianId);
     }
+
+    interface AddPrescriptionListener {
+        void onAddPrescription(String id, String patientId, String clinicianId, String appointmentId,
+                               Date prescriptionDate, String medicationName, String dosage, String frequency,
+                               int durationDays, String quantity, String instructions, String pharmacies,
+                               String status, Date dateIssued, Date collectionDate);
+    }
+
+    interface UpdatePrescriptionListener {
+        void onUpdatePrescription(String id, String patientId, String clinicianId, String appointmentId,
+                                  Date prescriptionDate, String medicationName, String dosage, String frequency,
+                                  int durationDays, String quantity, String instructions, String pharmacies,
+                                  String status, Date dateIssued, Date collectionDate);
+    }
+
+    interface DeletePrescriptionListener {
+        void onDeletePrescription(String prescriptionId);
+    }
+
 
 
 

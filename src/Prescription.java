@@ -1,5 +1,8 @@
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class Prescription {
     private String prescriptionID;
@@ -170,28 +173,103 @@ public class Prescription {
 //
 //    }
 
-    public String toCSV(){
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
-        return prescriptionID +  "," + patientID + "," + clinicianID + "," + appointmentID + "," + sdf.format(prescriptionDate)
-                + "," + medicationName + "," + dosage + "," + frequency + "," + durationDays + "," + quantity + ","
-                + instructions + "," + pharmacies + "," + status + "," + sdf.format(dateIssued) + "," + sdf.format(collectionDate);
+    public String toCSV() {
+        List<String> fields = new ArrayList<>();
+        fields.add(prescriptionID);
+        fields.add(patientID);
+        fields.add(clinicianID);
+        fields.add(appointmentID);
+        fields.add(formatDateOrBlank(prescriptionDate));
+        fields.add(medicationName);
+        fields.add(dosage);
+        fields.add(frequency);
+        fields.add(String.valueOf(durationDays));
+        fields.add(quantity);
+        fields.add(instructions);
+        fields.add(pharmacies);
+        fields.add(status);
+        fields.add(formatDateOrBlank(dateIssued));
+        fields.add(formatDateOrBlank(collectionDate));
+
+        return CSVHandler.toLine(fields);
     }
 
-    public static Prescription fromCSV(String csvLine){
+
+
+
+    public static Prescription fromCSV(String csvLine) {
         try {
-            String[] parts = csvLine.split(",");
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+            if (csvLine == null) return null;
+            String line = csvLine.trim();
+            if (line.isEmpty()) return null;
 
-            Date prescriptionDate = sdf.parse(parts[4]);
-            Date dateIssued = sdf.parse(parts[13]);
-            Date collectionDate = sdf.parse(parts[14]);
+            // Skip header row
+            String lower = line.toLowerCase();
+            if (lower.startsWith("prescription") || lower.startsWith("prescription_id")) return null;
 
-            return new Prescription(parts[0], parts[1],parts[2],parts[3],prescriptionDate,parts[5],parts[6],parts[7],Integer.parseInt(parts[8]),parts[9],parts[10],parts[11],parts[12],dateIssued,collectionDate);
-        } catch (Exception e){
-            e.printStackTrace();
+            List<String> parts = CSVHandler.parseLine(line);
+            if (parts.size() < 15) return null;
+
+            Date prescriptionDate = parseDateFlexibleOrNull(parts.get(4));
+            Date dateIssued = parseDateFlexibleOrNull(parts.get(13));
+            Date collectionDate = parseDateFlexibleOrNull(parts.get(14));
+
+            int durationDays = 0;
+            String durationText = parts.get(8).trim();
+            if (!durationText.isEmpty()) {
+                durationDays = Integer.parseInt(durationText);
+            }
+
+            return new Prescription(
+                    parts.get(0).trim(),  // prescriptionID
+                    parts.get(1).trim(),  // patientID
+                    parts.get(2).trim(),  // clinicianID
+                    parts.get(3).trim(),  // appointmentID
+                    prescriptionDate,
+                    parts.get(5).trim(),  // medicationName
+                    parts.get(6).trim(),  // dosage
+                    parts.get(7).trim(),  // frequency
+                    durationDays,
+                    parts.get(9).trim(),  // quantity
+                    parts.get(10).trim(), // instructions
+                    parts.get(11).trim(), // pharmacies
+                    parts.get(12).trim(), // status
+                    dateIssued,
+                    collectionDate
+            );
+        } catch (Exception e) {
+            // just skip the row
             return null;
         }
     }
+
+
+    private static Date parseDateFlexibleOrNull(String s) throws Exception {
+        if (s == null) return null;
+        String t = s.trim();
+        if (t.isEmpty()) return null;
+
+        SimpleDateFormat a = new SimpleDateFormat("yyyy-MM-dd");
+        a.setLenient(false);
+
+        try {
+            return a.parse(t);
+        } catch (Exception ignore) {
+            SimpleDateFormat b = new SimpleDateFormat("yyyy/MM/dd");
+            b.setLenient(false);
+            return b.parse(t);
+        }
+    }
+
+    private static String formatDateOrBlank(Date d) {
+        if (d == null) return "";
+        return new SimpleDateFormat("yyyy-MM-dd").format(d);
+    }
+
+
+
+
+
 
     @Override
     public String toString() {

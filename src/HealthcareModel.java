@@ -37,11 +37,14 @@ public class HealthcareModel {
     public void loadAllData() {
         loadClinicians();
         loadPatients();
+        loadPrescriptions();
+
     }
 
     public void saveAllData() {
         saveClinicians();
         savePatients();
+        savePrescriptions();
     }
 
 

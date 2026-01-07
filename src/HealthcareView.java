@@ -21,6 +21,12 @@ public class HealthcareView extends JFrame {
     private JTable cliniciansTable;
     private DefaultTableModel cliniciansTableModel;
 
+    // Prescription panel components
+    private JTable prescriptionsTable;
+    private DefaultTableModel prescriptionsTableModel;
+
+
+
 
 
 
@@ -35,6 +41,10 @@ public class HealthcareView extends JFrame {
     private ClinicianListener addClinicianListener;
     private ClinicianUpdateListener updateClinicianListener;
     private ClinicianDeleteListener deleteClinicianListener;
+    private AddPrescriptionListener addPrescriptionListener;
+    private UpdatePrescriptionListener updatePrescriptionListener;
+    private DeletePrescriptionListener deletePrescriptionListener;
+
 
 
     public HealthcareView() {
@@ -51,35 +61,11 @@ public class HealthcareView extends JFrame {
         this.controller = controller;
         reloadPatientsData();
         reloadCliniciansData();
+        reloadPrescriptionsData();
+
     }
 
-    private void loadPatientsData() {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-mm-dd");
 
-
-            //Load patients data
-            ArrayList <Patient> patients = controller.getAllPatients();
-            for (int i = 0; i < patients.size(); i++) {
-                Patient patient = patients.get(i);
-                Object[] row = {
-                        patient.getPatientId(),
-                        patient.getFirstName(),
-                        patient.getLastName(),
-                        sdf.format(patient.getDateOfBirth()),
-                        patient.getNhsNumber(),
-                        patient.getGender(),
-                        patient.getPhoneNumber(),
-                        patient.getEmail(),
-                        patient.getAddress(),
-                        patient.getPostCode(),
-                        patient.getEmergencyContactName(),
-                        patient.getEmergencyContactNo(),
-                        sdf.format(patient.getDateRegistered()),
-                        patient.getGpId()
-                };
-                patientsTableModel.addRow(row);
-            }
-        }
         public void reloadCliniciansData() {
             if (controller == null) return;
 
@@ -103,9 +89,7 @@ public class HealthcareView extends JFrame {
                     });
                 }
         }
-
-
-    public void reloadPatientsData() {
+        public void reloadPatientsData() {
         if (controller == null) return;
 
 
@@ -135,6 +119,35 @@ public class HealthcareView extends JFrame {
             patientsTableModel.addRow(row);
         }
     }
+    public void reloadPrescriptionsData() {
+        if (controller == null) return;
+
+        prescriptionsTableModel.setRowCount(0);
+
+        for (Prescription p : controller.getAllPrescriptions()) {
+
+            prescriptionsTableModel.addRow(new Object[]{
+                    p.getPrescriptionID(),
+                    p.getPatientID(),
+                    p.getClinicianID(),
+                    p.getAppointmentID(),
+                    fmtDate(p.getPrescriptionDate()), // SAFE
+                    p.getMedicationName(),
+                    p.getDosage(),
+                    p.getFrequency(),
+                    p.getDurationDays(),
+                    p.getQuantity(),
+                    p.getInstructions(),
+                    p.getPharmacies(),
+                    p.getStatus(),
+                    fmtDate(p.getDateIssued()),        // SAFE
+                    fmtDate(p.getCollectionDate())     // SAFE
+            });
+        }
+    }
+
+
+
 
 
 
@@ -145,6 +158,8 @@ public class HealthcareView extends JFrame {
         tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Patients",createPatientsPanel());
         tabbedPane.addTab("Clinicians", createCliniciansPanel());
+        tabbedPane.addTab("Prescriptions", createPrescriptionsPanel());
+
 
 
         add(tabbedPane,BorderLayout.CENTER);
@@ -518,6 +533,47 @@ public class HealthcareView extends JFrame {
         }
 
 
+        // ================ Prescription Panel =================
+        private JPanel createPrescriptionsPanel() {
+            JPanel panel = new JPanel(new BorderLayout(10, 10));
+            panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+            prescriptionsTableModel = new DefaultTableModel(new String[]{
+                    "Prescription ID", "Patient ID", "Clinician ID", "Appointment ID",
+                    "Prescription Date", "Medication", "Dosage", "Frequency",
+                    "Duration (Days)", "Quantity", "Instructions", "Pharmacies",
+                    "Status", "Date Issued", "Collection Date"
+            }, 0) {
+                public boolean isCellEditable(int row, int column) { return false; }
+            };
+
+            prescriptionsTable = new JTable(prescriptionsTableModel);
+            prescriptionsTable.setFillsViewportHeight(true);
+            prescriptionsTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+
+            JScrollPane scroll = new JScrollPane(prescriptionsTable);
+            scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            panel.add(scroll, BorderLayout.CENTER);
+
+            JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+            JButton addBtn = new JButton("Add Prescription");
+            JButton editBtn = new JButton("Modify Prescription");
+            JButton delBtn = new JButton("Delete Prescription");
+
+            addBtn.addActionListener(e -> showAddPrescriptionDialog());
+            editBtn.addActionListener(e -> showModifyPrescriptionDialog());
+            delBtn.addActionListener(e -> handleDeletePrescription());
+
+            buttons.add(addBtn);
+            buttons.add(editBtn);
+            buttons.add(delBtn);
+
+            panel.add(buttons, BorderLayout.SOUTH);
+            return panel;
+        }
+
+
+
 
     private void showAddClinicianDialog() {
         JDialog dialog = new JDialog(this, "Add Clinician", true);
@@ -701,6 +757,230 @@ public class HealthcareView extends JFrame {
 
 
 
+    private void showAddPrescriptionDialog() {
+        JDialog dialog = new JDialog(this, "Add Prescription", true);
+
+        JPanel panel = new JPanel(new GridLayout(0, 2, 10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        JTextField idField = new JTextField(15);
+        JTextField patientIdField = new JTextField(15);
+        JTextField clinicianIdField = new JTextField(15);
+        JTextField appointmentIdField = new JTextField(15);
+        JTextField prescriptionDateField = new JTextField(15);
+        JTextField medicationField = new JTextField(15);
+        JTextField dosageField = new JTextField(15);
+        JTextField frequencyField = new JTextField(15);
+        JTextField durationDaysField = new JTextField(15);
+        JTextField quantityField = new JTextField(15);
+        JTextField instructionsField = new JTextField(15);
+        JTextField pharmaciesField = new JTextField(15);
+        JTextField statusField = new JTextField(15);
+        JTextField dateIssuedField = new JTextField(15);
+        JTextField collectionDateField = new JTextField(15);
+
+        panel.add(new JLabel("Prescription ID:")); panel.add(idField);
+        panel.add(new JLabel("Patient ID:")); panel.add(patientIdField);
+        panel.add(new JLabel("Clinician ID:")); panel.add(clinicianIdField);
+        panel.add(new JLabel("Appointment ID:")); panel.add(appointmentIdField);
+        panel.add(new JLabel("Prescription Date (yyyy-MM-dd):")); panel.add(prescriptionDateField);
+        panel.add(new JLabel("Medication Name:")); panel.add(medicationField);
+        panel.add(new JLabel("Dosage:")); panel.add(dosageField);
+        panel.add(new JLabel("Frequency:")); panel.add(frequencyField);
+        panel.add(new JLabel("Duration Days:")); panel.add(durationDaysField);
+        panel.add(new JLabel("Quantity:")); panel.add(quantityField);
+        panel.add(new JLabel("Instructions:")); panel.add(instructionsField);
+        panel.add(new JLabel("Pharmacies:")); panel.add(pharmaciesField);
+        panel.add(new JLabel("Status:")); panel.add(statusField);
+        panel.add(new JLabel("Date Issued (yyyy-MM-dd):")); panel.add(dateIssuedField);
+        panel.add(new JLabel("Collection Date (yyyy-MM-dd):")); panel.add(collectionDateField);
+
+        JButton save = new JButton("Save");
+        JButton cancel = new JButton("Cancel");
+
+        save.addActionListener(e -> {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            sdf.setLenient(false);
+
+            String id = idField.getText().trim();
+            if (id.isEmpty()) { showErrorMessage("Prescription ID is required"); return; }
+
+            String patientId = patientIdField.getText().trim();
+            if (patientId.isEmpty()) { showErrorMessage("Patient ID is required"); return; }
+
+            String clinicianId = clinicianIdField.getText().trim();
+            if (clinicianId.isEmpty()) { showErrorMessage("Clinician ID is required"); return; }
+
+            String appointmentId = appointmentIdField.getText().trim();
+            if (appointmentId.isEmpty()) { showErrorMessage("Appointment ID is required"); return; }
+
+            Date prescriptionDate;
+            Date dateIssued;
+            Date collectionDate;
+            try {
+                prescriptionDate = sdf.parse(prescriptionDateField.getText().trim());
+                dateIssued = sdf.parse(dateIssuedField.getText().trim());
+                collectionDate = sdf.parse(collectionDateField.getText().trim());
+            } catch (Exception ex) {
+                showErrorMessage("Invalid date format (use yyyy-MM-dd)");
+                return;
+            }
+
+            String medication = medicationField.getText().trim();
+            if (medication.isEmpty()) { showErrorMessage("Medication Name is required"); return; }
+
+            String dosage = dosageField.getText().trim();
+            if (dosage.isEmpty()) { showErrorMessage("Dosage is required"); return; }
+
+            String frequency = frequencyField.getText().trim();
+            if (frequency.isEmpty()) { showErrorMessage("Frequency is required"); return; }
+
+            int durationDays;
+            try {
+                durationDays = Integer.parseInt(durationDaysField.getText().trim());
+            } catch (Exception ex) {
+                showErrorMessage("Duration Days must be a number");
+                return;
+            }
+
+            String quantity = quantityField.getText().trim();
+            if (quantity.isEmpty()) { showErrorMessage("Quantity is required"); return; }
+
+            String instructions = instructionsField.getText().trim();
+            if (instructions.isEmpty()) { showErrorMessage("Instructions is required"); return; }
+
+            String pharmacies = pharmaciesField.getText().trim();
+            if (pharmacies.isEmpty()) { showErrorMessage("Pharmacies is required"); return; }
+
+            String status = statusField.getText().trim();
+            if (status.isEmpty()) { showErrorMessage("Status is required"); return; }
+
+            if (addPrescriptionListener != null) {
+                addPrescriptionListener.onAddPrescription(
+                        id, patientId, clinicianId, appointmentId, prescriptionDate,
+                        medication, dosage, frequency, durationDays, quantity,
+                        instructions, pharmacies, status, dateIssued, collectionDate
+                );
+            }
+
+            dialog.dispose();
+        });
+
+        cancel.addActionListener(e -> dialog.dispose());
+
+        panel.add(save);
+        panel.add(cancel);
+
+        dialog.setContentPane(new JScrollPane(panel));
+        dialog.pack();
+        dialog.setMinimumSize(new Dimension(620, 520));
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+    }
+
+
+
+    private void showModifyPrescriptionDialog() {
+        int row = prescriptionsTable.getSelectedRow();
+        if (row == -1) { showErrorMessage("Select a prescription first."); return; }
+
+        String id = prescriptionsTableModel.getValueAt(row, 0).toString();
+
+        JTextField patientIdField = new JTextField(prescriptionsTableModel.getValueAt(row, 1).toString(), 15);
+        JTextField clinicianIdField = new JTextField(prescriptionsTableModel.getValueAt(row, 2).toString(), 15);
+        JTextField appointmentIdField = new JTextField(prescriptionsTableModel.getValueAt(row, 3).toString(), 15);
+        JTextField prescriptionDateField = new JTextField(prescriptionsTableModel.getValueAt(row, 4).toString(), 15);
+        JTextField medicationField = new JTextField(prescriptionsTableModel.getValueAt(row, 5).toString(), 15);
+        JTextField dosageField = new JTextField(prescriptionsTableModel.getValueAt(row, 6).toString(), 15);
+        JTextField frequencyField = new JTextField(prescriptionsTableModel.getValueAt(row, 7).toString(), 15);
+        JTextField durationDaysField = new JTextField(prescriptionsTableModel.getValueAt(row, 8).toString(), 15);
+        JTextField quantityField = new JTextField(prescriptionsTableModel.getValueAt(row, 9).toString(), 15);
+        JTextField instructionsField = new JTextField(prescriptionsTableModel.getValueAt(row, 10).toString(), 15);
+        JTextField pharmaciesField = new JTextField(prescriptionsTableModel.getValueAt(row, 11).toString(), 15);
+        JTextField statusField = new JTextField(prescriptionsTableModel.getValueAt(row, 12).toString(), 15);
+        JTextField dateIssuedField = new JTextField(prescriptionsTableModel.getValueAt(row, 13).toString(), 15);
+        JTextField collectionDateField = new JTextField(prescriptionsTableModel.getValueAt(row, 14).toString(), 15);
+
+        Object[] fields = {
+                "Patient ID:", patientIdField,
+                "Clinician ID:", clinicianIdField,
+                "Appointment ID:", appointmentIdField,
+                "Prescription Date (yyyy-MM-dd):", prescriptionDateField,
+                "Medication Name:", medicationField,
+                "Dosage:", dosageField,
+                "Frequency:", frequencyField,
+                "Duration Days:", durationDaysField,
+                "Quantity:", quantityField,
+                "Instructions:", instructionsField,
+                "Pharmacies:", pharmaciesField,
+                "Status:", statusField,
+                "Date Issued (yyyy-MM-dd):", dateIssuedField,
+                "Collection Date (yyyy-MM-dd):", collectionDateField
+        };
+
+        int option = JOptionPane.showConfirmDialog(this, fields, "Modify Prescription " + id, JOptionPane.OK_CANCEL_OPTION);
+        if (option != JOptionPane.OK_OPTION) return;
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        sdf.setLenient(false);
+
+        Date prescriptionDate, dateIssued, collectionDate;
+        try {
+            prescriptionDate = sdf.parse(prescriptionDateField.getText().trim());
+            dateIssued = sdf.parse(dateIssuedField.getText().trim());
+            collectionDate = sdf.parse(collectionDateField.getText().trim());
+        } catch (Exception ex) {
+            showErrorMessage("Invalid date format (use yyyy-MM-dd)");
+            return;
+        }
+
+        int durationDays;
+        try {
+            durationDays = Integer.parseInt(durationDaysField.getText().trim());
+        } catch (Exception ex) {
+            showErrorMessage("Duration Days must be a number");
+            return;
+        }
+
+        if (updatePrescriptionListener != null) {
+            updatePrescriptionListener.onUpdatePrescription(
+                    id,
+                    patientIdField.getText().trim(),
+                    clinicianIdField.getText().trim(),
+                    appointmentIdField.getText().trim(),
+                    prescriptionDate,
+                    medicationField.getText().trim(),
+                    dosageField.getText().trim(),
+                    frequencyField.getText().trim(),
+                    durationDays,
+                    quantityField.getText().trim(),
+                    instructionsField.getText().trim(),
+                    pharmaciesField.getText().trim(),
+                    statusField.getText().trim(),
+                    dateIssued,
+                    collectionDate
+            );
+        }
+    }
+
+
+    private void handleDeletePrescription() {
+        int row = prescriptionsTable.getSelectedRow();
+        if (row == -1) { showErrorMessage("Select a prescription first."); return; }
+
+        String id = prescriptionsTableModel.getValueAt(row, 0).toString();
+
+        if (deletePrescriptionListener != null) {
+            deletePrescriptionListener.onDeletePrescription(id);
+        }
+    }
+
+
+
+
+
+
+
 
 
 
@@ -738,6 +1018,9 @@ public class HealthcareView extends JFrame {
             this.deleteClinicianListener = listener;
         }
 
+        public void setAddPrescriptionListener(AddPrescriptionListener l) { this.addPrescriptionListener = l; }
+        public void setUpdatePrescriptionListener(UpdatePrescriptionListener l) { this.updatePrescriptionListener = l; }
+        public void setDeletePrescriptionListener(DeletePrescriptionListener l) { this.deletePrescriptionListener = l; }
 
 
     // ========== Utility Methods ==========
@@ -749,4 +1032,13 @@ public class HealthcareView extends JFrame {
         public void showErrorMessage(String message) {
             JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
         }
+
+
+
+    // Helper to safely format dates (prevents null crashes)
+    private String fmtDate(Date d) {
+        if (d == null) return "";
+        return new SimpleDateFormat("yyyy-MM-dd").format(d);
+    }
+
 }
