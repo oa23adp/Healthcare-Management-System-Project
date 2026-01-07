@@ -86,6 +86,35 @@ public class HealthcareController {
 
         });
 
+        view.setAddClinicianListener(clinician -> {
+            model.addClinician(clinician);
+            view.showSuccessMessage("Clinician added successfully!");
+            refreshCliniciansTable();
+        });
+
+        view.setUpdateClinicianListener((id, first, last, phone, email) -> {
+            boolean ok = model.updateClinicianName(id, first, last)
+                    && model.updateClinicianContact(id, phone, email);
+
+            if (ok) {
+                view.showSuccessMessage("Clinician updated.");
+                refreshCliniciansTable();
+            } else {
+                view.showErrorMessage("Clinician not found.");
+            }
+        });
+
+        view.setDeleteClinicianListener(id -> {
+            boolean ok = model.deleteClinician(id);
+            if (ok) {
+                view.showSuccessMessage("Clinician deleted.");
+                refreshCliniciansTable();
+            } else {
+                view.showErrorMessage("Clinician not found.");
+            }
+        });
+
+
 
 
 
