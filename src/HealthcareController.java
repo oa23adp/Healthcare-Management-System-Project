@@ -155,6 +155,53 @@ public class HealthcareController {
             }
         });
 
+        view.setAddAppointmentListener((id, patientId, clinicianId, facilityId,
+                                        appointmentDate, appointmentTime, durationMinutes,
+                                        appointmentType, status, reason, notes,
+                                        dateCreated, lastModified) -> {
+
+            model.addAppointment(new Appointment(
+                    id, patientId, clinicianId, facilityId,
+                    appointmentDate, appointmentTime, durationMinutes,
+                    appointmentType, status, reason, notes,
+                    dateCreated, lastModified
+            ));
+
+            view.showSuccessMessage("Appointment added successfully!");
+            view.reloadAppointmentsData();
+        });
+
+        view.setUpdateAppointmentListener((id, patientId, clinicianId, facilityId,
+                                           appointmentDate, appointmentTime, durationMinutes,
+                                           appointmentType, status, reason, notes,
+                                           dateCreated, lastModified) -> {
+
+            boolean ok = model.updateAppointment(id, new Appointment(
+                    id, patientId, clinicianId, facilityId,
+                    appointmentDate, appointmentTime, durationMinutes,
+                    appointmentType, status, reason, notes,
+                    dateCreated, lastModified
+            ));
+
+            if (ok) {
+                view.showSuccessMessage("Appointment updated.");
+                view.reloadAppointmentsData();
+            } else {
+                view.showErrorMessage("Appointment not found.");
+            }
+        });
+
+        view.setDeleteAppointmentListener(id -> {
+            boolean ok = model.deleteAppointment(id);
+            if (ok) {
+                view.showSuccessMessage("Appointment deleted.");
+                view.reloadAppointmentsData();
+            } else {
+                view.showErrorMessage("Appointment not found.");
+            }
+        });
+
+
 
 
     }
@@ -186,6 +233,11 @@ public class HealthcareController {
         javax.swing.SwingUtilities.invokeLater(() -> view.reloadCliniciansData());
     }
 
+    private void refreshAppointmentsTable() {
+        javax.swing.SwingUtilities.invokeLater(() -> view.reloadAppointmentsData());
+    }
+
+
 
 
     // ========== Data Persistence ==========
@@ -211,6 +263,11 @@ public class HealthcareController {
     public Prescription getPrescriptionById(String prescriptionId) {
         return model.getPrescriptionById(prescriptionId);
     }
+
+    public ArrayList<Appointment> getAllAppointments() {
+        return model.getAllAppointments();
+    }
+
 
 
 
@@ -270,6 +327,25 @@ public class HealthcareController {
     interface DeletePrescriptionListener {
         void onDeletePrescription(String prescriptionId);
     }
+
+    interface AddAppointmentListener {
+        void onAddAppointment(String id, String patientId, String clinicianId, String facilityId,
+                              Date appointmentDate, String appointmentTime, int durationMinutes,
+                              String appointmentType, String status, String reason, String notes,
+                              Date dateCreated, Date lastModified);
+    }
+
+    interface UpdateAppointmentListener {
+        void onUpdateAppointment(String id, String patientId, String clinicianId, String facilityId,
+                                 Date appointmentDate, String appointmentTime, int durationMinutes,
+                                 String appointmentType, String status, String reason, String notes,
+                                 Date dateCreated, Date lastModified);
+    }
+
+    interface DeleteAppointmentListener {
+        void onDeleteAppointment(String id);
+    }
+
 
 
 

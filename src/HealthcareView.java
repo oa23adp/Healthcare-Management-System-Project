@@ -25,6 +25,11 @@ public class HealthcareView extends JFrame {
     private JTable prescriptionsTable;
     private DefaultTableModel prescriptionsTableModel;
 
+    // Appointment panel components
+    private JTable appointmentsTable;
+    private DefaultTableModel appointmentsTableModel;
+
+
 
 
 
@@ -46,6 +51,10 @@ public class HealthcareView extends JFrame {
     private AddPrescriptionListener addPrescriptionListener;
     private UpdatePrescriptionListener updatePrescriptionListener;
     private DeletePrescriptionListener deletePrescriptionListener;
+    private AddAppointmentListener addAppointmentListener;
+    private UpdateAppointmentListener updateAppointmentListener;
+    private DeleteAppointmentListener deleteAppointmentListener;
+
 
 
 
@@ -64,6 +73,7 @@ public class HealthcareView extends JFrame {
         reloadPatientsData();
         reloadCliniciansData();
         reloadPrescriptionsData();
+        reloadAppointmentsData();
 
     }
 
@@ -148,6 +158,31 @@ public class HealthcareView extends JFrame {
             }
         }
 
+        public void reloadAppointmentsData() {
+        if (controller == null) return;
+
+        appointmentsTableModel.setRowCount(0);
+
+        for (Appointment a : controller.getAllAppointments()) {
+            appointmentsTableModel.addRow(new Object[]{
+                    a.getAppointmentId(),
+                    a.getPatientId(),
+                    a.getClinicianId(),
+                    a.getFacilityId(),
+                    fmtDate(a.getAppointmentDate()),
+                    a.getAppointmentTime(),
+                    a.getDurationMinutes(),
+                    a.getAppointmentType(),
+                    a.getStatus(),
+                    a.getReason(),
+                    a.getNotes(),
+                    fmtDate(a.getDateCreated()),
+                    fmtDate(a.getLastModified())
+            });
+        }
+    }
+
+
 
 
 
@@ -161,6 +196,8 @@ public class HealthcareView extends JFrame {
         tabbedPane.addTab("Patients",createPatientsPanel());
         tabbedPane.addTab("Clinicians", createCliniciansPanel());
         tabbedPane.addTab("Prescriptions", createPrescriptionsPanel());
+        tabbedPane.addTab("Appointments", createAppointmentsPanel());
+
 
 
 
@@ -1048,6 +1085,237 @@ public class HealthcareView extends JFrame {
 
 
 
+    //================= Appointment Panel ==================
+
+    private JPanel createAppointmentsPanel() {
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        appointmentsTableModel = new DefaultTableModel(new String[]{
+                "Appointment ID", "Patient ID", "Clinician ID", "Facility ID",
+                "Appointment Date", "Appointment Time", "Duration (Minutes)",
+                "Appointment Type", "Status", "Reason", "Notes",
+                "Date Created", "Last Modified"
+        }, 0) {
+            public boolean isCellEditable(int row, int column) { return false; }
+        };
+
+        appointmentsTable = new JTable(appointmentsTableModel);
+        appointmentsTable.setFillsViewportHeight(true);
+        appointmentsTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+
+        JScrollPane scroll = new JScrollPane(appointmentsTable);
+        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        panel.add(scroll, BorderLayout.CENTER);
+
+        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton addBtn = new JButton("Add Appointment");
+        JButton editBtn = new JButton("Modify Appointment");
+        JButton delBtn = new JButton("Delete Appointment");
+
+        addBtn.addActionListener(e -> showAddAppointmentDialog());
+        editBtn.addActionListener(e -> showModifyAppointmentDialog());
+        delBtn.addActionListener(e -> handleDeleteAppointment());
+
+        buttons.add(addBtn);
+        buttons.add(editBtn);
+        buttons.add(delBtn);
+
+        panel.add(buttons, BorderLayout.SOUTH);
+        return panel;
+    }
+    private void showAddAppointmentDialog() {
+        JDialog dialog = new JDialog(this, "Add Appointment", true);
+
+        JPanel panel = new JPanel(new GridLayout(0, 2, 10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        JTextField idField = new JTextField(15);
+        JTextField patientIdField = new JTextField(15);
+        JTextField clinicianIdField = new JTextField(15);
+        JTextField facilityIdField = new JTextField(15);
+        JTextField dateField = new JTextField(15);         // yyyy-MM-dd
+        JTextField timeField = new JTextField(15);         // HH:mm
+        JTextField durationField = new JTextField(15);
+        JTextField typeField = new JTextField(15);
+        JTextField statusField = new JTextField(15);
+        JTextField reasonField = new JTextField(15);
+        JTextField notesField = new JTextField(15);
+        JTextField dateCreatedField = new JTextField(15);  // yyyy-MM-dd (optional)
+        JTextField lastModifiedField = new JTextField(15); // yyyy-MM-dd (optional)
+
+        panel.add(new JLabel("Appointment ID:")); panel.add(idField);
+        panel.add(new JLabel("Patient ID:")); panel.add(patientIdField);
+        panel.add(new JLabel("Clinician ID:")); panel.add(clinicianIdField);
+        panel.add(new JLabel("Facility ID:")); panel.add(facilityIdField);
+        panel.add(new JLabel("Appointment Date (yyyy-MM-dd):")); panel.add(dateField);
+        panel.add(new JLabel("Appointment Time (HH:mm):")); panel.add(timeField);
+        panel.add(new JLabel("Duration Minutes:")); panel.add(durationField);
+        panel.add(new JLabel("Appointment Type:")); panel.add(typeField);
+        panel.add(new JLabel("Status:")); panel.add(statusField);
+        panel.add(new JLabel("Reason:")); panel.add(reasonField);
+        panel.add(new JLabel("Notes:")); panel.add(notesField);
+        panel.add(new JLabel("Date Created (yyyy-MM-dd):")); panel.add(dateCreatedField);
+        panel.add(new JLabel("Last Modified (yyyy-MM-dd):")); panel.add(lastModifiedField);
+
+        JButton save = new JButton("Save");
+        JButton cancel = new JButton("Cancel");
+
+        save.addActionListener(e -> {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            sdf.setLenient(false);
+
+            String id = idField.getText().trim();
+            if (id.isEmpty()) { showErrorMessage("Appointment ID is required"); return; }
+
+            String patientId = patientIdField.getText().trim();
+            if (patientId.isEmpty()) { showErrorMessage("Patient ID is required"); return; }
+
+            String clinicianId = clinicianIdField.getText().trim();
+            if (clinicianId.isEmpty()) { showErrorMessage("Clinician ID is required"); return; }
+
+            String facilityId = facilityIdField.getText().trim();
+            if (facilityId.isEmpty()) { showErrorMessage("Facility ID is required"); return; }
+
+            Date appointmentDate;
+            try { appointmentDate = sdf.parse(dateField.getText().trim()); }
+            catch (Exception ex) { showErrorMessage("Invalid Appointment Date (yyyy-MM-dd)"); return; }
+
+            String time = timeField.getText().trim();
+            if (time.isEmpty()) { showErrorMessage("Appointment Time is required"); return; }
+
+            int duration;
+            try { duration = Integer.parseInt(durationField.getText().trim()); }
+            catch (Exception ex) { showErrorMessage("Duration Minutes must be a number"); return; }
+
+            String type = typeField.getText().trim();
+            if (type.isEmpty()) { showErrorMessage("Appointment Type is required"); return; }
+
+            String status = statusField.getText().trim();
+            if (status.isEmpty()) { showErrorMessage("Status is required"); return; }
+
+            String reason = reasonField.getText().trim();
+            String notes = notesField.getText().trim();
+
+            // Optional dates: if blank, default to today
+            Date dateCreated = new Date();
+            if (!dateCreatedField.getText().trim().isEmpty()) {
+                try { dateCreated = sdf.parse(dateCreatedField.getText().trim()); }
+                catch (Exception ex) { showErrorMessage("Invalid Date Created (yyyy-MM-dd)"); return; }
+            }
+
+            Date lastModified = new Date();
+            if (!lastModifiedField.getText().trim().isEmpty()) {
+                try { lastModified = sdf.parse(lastModifiedField.getText().trim()); }
+                catch (Exception ex) { showErrorMessage("Invalid Last Modified (yyyy-MM-dd)"); return; }
+            }
+
+            if (addAppointmentListener != null) {
+                addAppointmentListener.onAddAppointment(
+                        id, patientId, clinicianId, facilityId,
+                        appointmentDate, time, duration, type, status,
+                        reason, notes, dateCreated, lastModified
+                );
+            }
+
+            dialog.dispose();
+        });
+
+        cancel.addActionListener(e -> dialog.dispose());
+
+        panel.add(save);
+        panel.add(cancel);
+
+        dialog.setContentPane(new JScrollPane(panel));
+        dialog.pack();
+        dialog.setMinimumSize(new Dimension(650, 560));
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+    }
+    private void showModifyAppointmentDialog() {
+        int row = appointmentsTable.getSelectedRow();
+        if (row == -1) { showErrorMessage("Select an appointment first."); return; }
+
+        String id = appointmentsTableModel.getValueAt(row, 0).toString();
+
+        JTextField patientIdField = new JTextField(appointmentsTableModel.getValueAt(row, 1).toString(), 15);
+        JTextField clinicianIdField = new JTextField(appointmentsTableModel.getValueAt(row, 2).toString(), 15);
+        JTextField facilityIdField = new JTextField(appointmentsTableModel.getValueAt(row, 3).toString(), 15);
+        JTextField dateField = new JTextField(appointmentsTableModel.getValueAt(row, 4).toString(), 15);
+        JTextField timeField = new JTextField(appointmentsTableModel.getValueAt(row, 5).toString(), 15);
+        JTextField durationField = new JTextField(appointmentsTableModel.getValueAt(row, 6).toString(), 15);
+        JTextField typeField = new JTextField(appointmentsTableModel.getValueAt(row, 7).toString(), 15);
+        JTextField statusField = new JTextField(appointmentsTableModel.getValueAt(row, 8).toString(), 15);
+        JTextField reasonField = new JTextField(appointmentsTableModel.getValueAt(row, 9).toString(), 15);
+        JTextField notesField = new JTextField(appointmentsTableModel.getValueAt(row, 10).toString(), 15);
+        JTextField dateCreatedField = new JTextField(appointmentsTableModel.getValueAt(row, 11).toString(), 15);
+        JTextField lastModifiedField = new JTextField(appointmentsTableModel.getValueAt(row, 12).toString(), 15);
+
+        Object[] fields = {
+                "Patient ID:", patientIdField,
+                "Clinician ID:", clinicianIdField,
+                "Facility ID:", facilityIdField,
+                "Appointment Date (yyyy-MM-dd):", dateField,
+                "Appointment Time (HH:mm):", timeField,
+                "Duration Minutes:", durationField,
+                "Appointment Type:", typeField,
+                "Status:", statusField,
+                "Reason:", reasonField,
+                "Notes:", notesField,
+                "Date Created (yyyy-MM-dd):", dateCreatedField,
+                "Last Modified (yyyy-MM-dd):", lastModifiedField
+        };
+
+        int option = JOptionPane.showConfirmDialog(this, fields, "Modify Appointment " + id,
+                JOptionPane.OK_CANCEL_OPTION);
+
+        if (option != JOptionPane.OK_OPTION) return;
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        sdf.setLenient(false);
+
+        Date appointmentDate, dateCreated, lastModified;
+        try { appointmentDate = sdf.parse(dateField.getText().trim()); }
+        catch (Exception ex) { showErrorMessage("Invalid Appointment Date (yyyy-MM-dd)"); return; }
+
+        try { dateCreated = sdf.parse(dateCreatedField.getText().trim()); }
+        catch (Exception ex) { showErrorMessage("Invalid Date Created (yyyy-MM-dd)"); return; }
+
+        try { lastModified = sdf.parse(lastModifiedField.getText().trim()); }
+        catch (Exception ex) { showErrorMessage("Invalid Last Modified (yyyy-MM-dd)"); return; }
+
+        int duration;
+        try { duration = Integer.parseInt(durationField.getText().trim()); }
+        catch (Exception ex) { showErrorMessage("Duration Minutes must be a number"); return; }
+
+        if (updateAppointmentListener != null) {
+            updateAppointmentListener.onUpdateAppointment(
+                    id,
+                    patientIdField.getText().trim(),
+                    clinicianIdField.getText().trim(),
+                    facilityIdField.getText().trim(),
+                    appointmentDate,
+                    timeField.getText().trim(),
+                    duration,
+                    typeField.getText().trim(),
+                    statusField.getText().trim(),
+                    reasonField.getText().trim(),
+                    notesField.getText().trim(),
+                    dateCreated,
+                    lastModified
+            );
+        }
+    }
+    private void handleDeleteAppointment() {
+        int row = appointmentsTable.getSelectedRow();
+        if (row == -1) { showErrorMessage("Select an appointment first."); return; }
+
+        String id = appointmentsTableModel.getValueAt(row, 0).toString();
+
+        if (deleteAppointmentListener != null) {
+            deleteAppointmentListener.onDeleteAppointment(id);
+        }
+    }
 
 
 
@@ -1094,6 +1362,11 @@ public class HealthcareView extends JFrame {
         public void setAddPrescriptionListener(AddPrescriptionListener l) { this.addPrescriptionListener = l; }
         public void setUpdatePrescriptionListener(UpdatePrescriptionListener l) { this.updatePrescriptionListener = l; }
         public void setDeletePrescriptionListener(DeletePrescriptionListener l) { this.deletePrescriptionListener = l; }
+
+        public void setAddAppointmentListener(AddAppointmentListener l) { this.addAppointmentListener = l; }
+        public void setUpdateAppointmentListener(UpdateAppointmentListener l) { this.updateAppointmentListener = l; }
+        public void setDeleteAppointmentListener(DeleteAppointmentListener l) { this.deleteAppointmentListener = l; }
+
 
 
     // ========== Utility Methods ==========

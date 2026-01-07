@@ -38,6 +38,7 @@ public class HealthcareModel {
         loadClinicians();
         loadPatients();
         loadPrescriptions();
+        loadAppointments();
 
     }
 
@@ -45,6 +46,7 @@ public class HealthcareModel {
         saveClinicians();
         savePatients();
         savePrescriptions();
+        saveAppointments();
     }
 
 
@@ -221,6 +223,57 @@ public class HealthcareModel {
 
 
     // ================== Appointment Management =======================
+    public void loadAppointments() {
+        ArrayList<String> lines = CSVHandler.readLines(APPOINTMENTS_FILE);
+        for (int i = 0; i < lines.size(); i++) {
+            Appointment a = Appointment.fromCSV(lines.get(i));
+            if (a != null) {
+                appointments.put(a.getAppointmentId(), a);
+            }
+        }
+
+    }
+
+    public void saveAppointments() {
+        ArrayList<String> lines = new ArrayList<>();
+        ArrayList<Appointment> list = new ArrayList<>(appointments.values());
+
+        for (int i = 0; i < list.size(); i++) {
+            lines.add(list.get(i).toCSV());
+        }
+        CSVHandler.writeLines(APPOINTMENTS_FILE, lines);
+    }
+
+    public void addAppointment(Appointment appointment) {
+        appointments.put(appointment.getAppointmentId(), appointment);
+        saveAppointments();
+    }
+
+    public boolean updateAppointment(String appointmentId, Appointment updated) {
+        if (!appointments.containsKey(appointmentId)) return false;
+        appointments.put(appointmentId, updated);
+        saveAppointments();
+        return true;
+    }
+
+
+    public boolean deleteAppointment(String appointmentId) {
+        if (appointments.remove(appointmentId) != null) {
+            saveAppointments();
+            return true;
+        }
+        return false;
+    }
+
+    public ArrayList<Appointment> getAllAppointments() {
+        return new ArrayList<>(appointments.values());
+    }
+
+
+
+
+
+
 
 
 }

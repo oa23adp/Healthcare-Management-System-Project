@@ -152,31 +152,65 @@ public class Appointment {
 
 
     public String toCSV() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
-        return appointmentId + "," + patientId + "," + clinicianId + "," + facilityId + sdf.format(appointmentDate) + "," + appointmentTime + "," +
-                durationMinutes + "," + appointmentType + "," + status + "," + reason + "," + notes + "," + sdf.format(dateCreated) + "," + sdf.format(lastModified);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
+        return String.join(",",
+                appointmentId,
+                patientId,
+                clinicianId,
+                facilityId,
+                appointmentDate == null ? "" : sdf.format(appointmentDate),
+                appointmentTime,
+                String.valueOf(durationMinutes),
+                appointmentType,
+                status,
+                reason,
+                notes == null ? "" : notes,
+                dateCreated == null ? "" : sdf.format(dateCreated),
+                lastModified == null ? "" : sdf.format(lastModified)
+        );
     }
 
 
-    public static Appointment fromCSV(String csvLine){
+
+    public static Appointment fromCSV(String csvLine) {
         try {
-            String[] parts = csvLine.split(",");
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+            if (csvLine == null || csvLine.trim().isEmpty()) return null;
 
-            Date appointmentDate = sdf.parse(parts[4]);
-            Date dateCreated = sdf.parse(parts[11]);
-            Date lastModified = sdf.parse(parts[12]);
+            // Skip header row
+            if (csvLine.toLowerCase().contains("appointment_date")) return null;
 
-            return new Appointment(parts[0], parts[1], parts[2], parts[3], appointmentDate,
-                    parts[5], Integer.parseInt(parts[6]), parts[7], parts[8], parts[9], parts[10], dateCreated,
-                    lastModified);
+            String[] parts = csvLine.split(",", -1); // keep empty fields
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            sdf.setLenient(false);
+
+            Date appointmentDate = parts[4].isEmpty() ? null : sdf.parse(parts[4]);
+            Date dateCreated     = parts[11].isEmpty() ? null : sdf.parse(parts[11]);
+            Date lastModified    = parts[12].isEmpty() ? null : sdf.parse(parts[12]);
+
+            return new Appointment(
+                    parts[0],                     // appointmentId
+                    parts[1],                     // patientId
+                    parts[2],                     // clinicianId
+                    parts[3],                     // facilityId
+                    appointmentDate,              // appointmentDate
+                    parts[5],                     // appointmentTime
+                    Integer.parseInt(parts[6]),    // durationMinutes
+                    parts[7],                     // appointmentType
+                    parts[8],                     // status
+                    parts[9],                     // reason
+                    parts[10],                    // notes
+                    dateCreated,                  // dateCreated
+                    lastModified                  // lastModified
+            );
+
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
-
     }
+
 
 
     @Override
