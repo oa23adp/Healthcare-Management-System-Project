@@ -103,6 +103,8 @@ public class HealthcareModel {
         return new ArrayList<Patient>(patients.values());
     }
 
+
+
     public Patient getPatient(String patientId) {
         return patients.get(patientId);
     }
@@ -138,32 +140,29 @@ public class HealthcareModel {
 
     public void addClinician(Clinician clinician) {
         clinicians.put(clinician.getClinicianId(), clinician);
-        savePatients();
-    }
-
-    public boolean updateClinicianName(String clinicianId, String firstName, String lastName) {
-        Clinician c = clinicians.get(clinicianId);
-        if (c == null) return false;
-
-        c.setFirstName(firstName);
-        c.setLastName(lastName);
-        return true;
-    }
-
-    public boolean updateClinicianContact(String clinicianId, String phone, String email) {
-        Clinician c = clinicians.get(clinicianId);
-        if (c == null) return false;
-
-        c.setPhoneNumber(phone);
-        c.setEmail(email);
-        return true;
+        saveClinicians();
     }
 
     public boolean deleteClinician(String clinicianId) {
-        return clinicians.remove(clinicianId) != null;
+        Clinician removed = clinicians.remove(clinicianId);
+        if (removed != null) {
+            saveClinicians();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean updateClinician(String clinicianId, Clinician updated) {
+        if (!clinicians.containsKey(clinicianId)) return false;
+        clinicians.put(clinicianId, updated);
+        saveClinicians();
+        return true;
     }
 
     public ArrayList<Clinician> getAllClinicians() {
         return new ArrayList<>(clinicians.values());
     }
+
+
+
 }

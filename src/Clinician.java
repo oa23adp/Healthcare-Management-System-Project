@@ -1,5 +1,8 @@
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
+
 
 
 public class Clinician extends Person {
@@ -106,25 +109,66 @@ public class Clinician extends Person {
 //
 //    }
 
-    public String toCSV(){
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
-        return clinicianId + "," + getFirstName() + "," + getLastName() + "," + title + "," + speciality + "," + gmcNo + "," +
-                getPhoneNumber() + "," + getEmail() + "," + workplaceId + "," + workplaceType + "," + employmentStatus + "," + sdf.format(startDate);
+    public String toCSV() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+        List<String> fields = new ArrayList<>();
+        fields.add(clinicianId);
+        fields.add(getFirstName());
+        fields.add(getLastName());
+        fields.add(title);
+        fields.add(speciality);
+        fields.add(gmcNo);
+        fields.add(getPhoneNumber());
+        fields.add(getEmail());
+        fields.add(workplaceId);
+        fields.add(workplaceType);
+        fields.add(employmentStatus);
+        fields.add(sdf.format(startDate));
+
+        return CSVHandler.toLine(fields);
     }
 
-    public static Clinician fromCSV(String csvLine){
+
+    public static Clinician fromCSV(String csvLine) {
         try {
-            String[] parts = csvLine.split(",");
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+            if (csvLine == null) return null;
+            String line = csvLine.trim();
+            if (line.isEmpty()) return null;
 
-            Date startDate = sdf.parse(parts[11]);
+            // Skip header row
+            if (line.toLowerCase().startsWith("clinician_id,")) {
+                return null;
+            }
 
-            return new Clinician(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5], parts[6], parts[7], parts[8], parts[9], parts[10], startDate);
+            List<String> parts = CSVHandler.parseLine(line);
+            if (parts.size() < 12) return null;
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            sdf.setLenient(false);
+
+            Date startDate = sdf.parse(parts.get(11));
+
+            return new Clinician(
+                    parts.get(0),  // clinicianId
+                    parts.get(1),  // firstName
+                    parts.get(2),  // lastName
+                    parts.get(3),  // title
+                    parts.get(4),  // speciality
+                    parts.get(5),  // gmcNo
+                    parts.get(6),  // phoneNumber
+                    parts.get(7),  // email
+                    parts.get(8),  // workplaceId
+                    parts.get(9),  // workplaceType
+                    parts.get(10), // employmentStatus
+                    startDate
+            );
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
+
 
     @Override
     public String toString() {

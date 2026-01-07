@@ -86,19 +86,17 @@ public class HealthcareController {
 
         });
 
-        view.setAddClinicianListener(clinician -> {
-            model.addClinician(clinician);
+        view.setAddClinicianListener((id, first, last, title, spec, gmc, phone, email, wid, wtype, status, startDate) -> {
+            model.addClinician(new Clinician(id, first, last, title, spec, gmc, phone, email, wid, wtype, status, startDate));
             view.showSuccessMessage("Clinician added successfully!");
-            refreshCliniciansTable();
+            view.reloadCliniciansData();
         });
 
-        view.setUpdateClinicianListener((id, first, last, phone, email) -> {
-            boolean ok = model.updateClinicianName(id, first, last)
-                    && model.updateClinicianContact(id, phone, email);
-
+        view.setUpdateClinicianListener((id, first, last, title, spec, gmc, phone, email, wid, wtype, status, startDate) -> {
+            boolean ok = model.updateClinician(id, new Clinician(id, first, last, title, spec, gmc, phone, email, wid, wtype, status, startDate));
             if (ok) {
                 view.showSuccessMessage("Clinician updated.");
-                refreshCliniciansTable();
+                view.reloadCliniciansData();
             } else {
                 view.showErrorMessage("Clinician not found.");
             }
@@ -108,13 +106,11 @@ public class HealthcareController {
             boolean ok = model.deleteClinician(id);
             if (ok) {
                 view.showSuccessMessage("Clinician deleted.");
-                refreshCliniciansTable();
+                view.reloadCliniciansData();
             } else {
                 view.showErrorMessage("Clinician not found.");
             }
         });
-
-
 
 
 
@@ -143,6 +139,11 @@ public class HealthcareController {
         javax.swing.SwingUtilities.invokeLater(() -> view.reloadPatientsData());
     }
 
+    private void refreshCliniciansTable() {
+        javax.swing.SwingUtilities.invokeLater(() -> view.reloadCliniciansData());
+    }
+
+
 
     // ========== Data Persistence ==========
 
@@ -155,6 +156,12 @@ public class HealthcareController {
     public ArrayList<Patient> getAllPatients() {
         return model.getAllPatients();
     }
+
+    public ArrayList<Clinician> getAllClinicians() {
+        return model.getAllClinicians();
+    }
+
+
 }
 
 
@@ -175,5 +182,24 @@ public class HealthcareController {
     interface DeletePatientListener {
         void onDeletePatient(String patientId);
     }
+
+
+    interface ClinicianListener {
+        void onAddClinician(String clinicianId, String firstName, String lastName, String title,
+                            String speciality, String gmcNo, String phoneNumber, String email,
+                            String workplaceId, String workplaceType, String employmentStatus, Date startDate);
+    }
+
+    interface ClinicianUpdateListener {
+        void onUpdateClinician(String clinicianId, String firstName, String lastName, String title,
+                               String speciality, String gmcNo, String phoneNumber, String email,
+                               String workplaceId, String workplaceType, String employmentStatus, Date startDate);
+    }
+
+    interface ClinicianDeleteListener {
+        void onDeleteClinician(String clinicianId);
+    }
+
+
 
 
