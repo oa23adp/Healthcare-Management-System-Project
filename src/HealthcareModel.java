@@ -164,5 +164,51 @@ public class HealthcareModel {
     }
 
 
+    // ============== Prescription Management =================
+
+    public void loadPrescriptions() {
+        ArrayList<String> lines = CSVHandler.readLines(PRESCRIPTIONS_FILE);
+        for (int i = 0; i < lines.size(); i++) {
+            Prescription p = Prescription.fromCSV(lines.get(i));
+            if (p != null) {
+                prescriptions.put(p.getPrescriptionID(), p);
+            }
+        }
+    }
+
+    public void savePrescriptions() {
+        ArrayList<String> lines = new ArrayList<>();
+        ArrayList<Prescription> list = new ArrayList<>(prescriptions.values());
+
+        for (int i = 0; i < list.size(); i++) {
+            lines.add(list.get(i).toCSV());
+        }
+        CSVHandler.writeLines(PRESCRIPTIONS_FILE, lines);
+    }
+
+    public void addPrescription(Prescription p) {
+        prescriptions.put(p.getPrescriptionID(), p);
+        savePrescriptions();
+    }
+
+    public boolean updatePrescription(String prescriptionId, Prescription updated) {
+        if (!prescriptions.containsKey(prescriptionId)) return false;
+        prescriptions.put(prescriptionId, updated);
+        savePrescriptions();
+        return true;
+    }
+
+    public boolean deletePrescription(String prescriptionId) {
+        Prescription removed = prescriptions.remove(prescriptionId);
+        if (removed != null) {
+            savePrescriptions();
+            return true;
+        }
+        return false;
+    }
+
+    public ArrayList<Prescription> getAllPrescriptions() {
+        return new ArrayList<>(prescriptions.values());
+    }
 
 }
