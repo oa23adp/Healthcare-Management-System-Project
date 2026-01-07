@@ -132,34 +132,63 @@ public class Patient extends Person {
 //    }
 
     public String toCSV() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
-        return patientId + "," + getFirstName() + "," + getLastName() + "," + sdf.format(dateOfBirth) + "," + nhsNumber + "," + gender + "," + getPhoneNumber() + "," + getEmail() + "," + address + "," + postCode
-                + "," + emergencyContactName + "," + emergencyContactNo + "," + sdf.format(dateRegistered) + "," + gpId;
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+        List<String> fields = new ArrayList<>();
+        fields.add(patientId);
+        fields.add(getFirstName());
+        fields.add(getLastName());
+        fields.add(sdf.format(dateOfBirth));
+        fields.add(nhsNumber);
+        fields.add(gender);
+        fields.add(getPhoneNumber());
+        fields.add(getEmail());
+        fields.add(address);
+        fields.add(postCode);
+        fields.add(emergencyContactName);
+        fields.add(emergencyContactNo);
+        fields.add(sdf.format(dateRegistered));
+        fields.add(gpId);
+
+        return CSVHandler.toLine(fields);
     }
 
     public static Patient fromCSV(String csvLine) {
         try {
-            String[] parts = csvLine.split(",");
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+            if (csvLine == null) return null;
+            String line = csvLine.trim();
+            if (line.isEmpty()) return null;
 
-            Date dateOfBirth = sdf.parse(parts[3]);
-            Date dateRegistered = sdf.parse(parts[12]);
+            // Skip header row
+            if (line.toLowerCase().startsWith("patient_id,")) {
+                return null;
+            }
+
+            List<String> parts = CSVHandler.parseLine(line);
+            if (parts.size() < 14) return null;
+
+            // Your file uses yyyy-MM-dd (e.g., 1985-03-15)
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            sdf.setLenient(false);
+
+            Date dateOfBirth = sdf.parse(parts.get(3));
+            Date dateRegistered = sdf.parse(parts.get(12));
 
             return new Patient(
-                    parts[0],
-                    parts[1],
-                    parts[2],
+                    parts.get(0),
+                    parts.get(1),
+                    parts.get(2),
                     dateOfBirth,
-                    parts[4],
-                    parts[5],
-                    parts[6],
-                    parts[7],
-                    parts[8],
-                    parts[9],
-                    parts[10],
-                    parts[11],
+                    parts.get(4),
+                    parts.get(5),
+                    parts.get(6),
+                    parts.get(7),
+                    parts.get(8),
+                    parts.get(9),
+                    parts.get(10),
+                    parts.get(11),
                     dateRegistered,
-                    parts[13]
+                    parts.get(13)
             );
         } catch (Exception e) {
             e.printStackTrace();

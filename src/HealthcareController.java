@@ -18,6 +18,7 @@ public class HealthcareController {
     }
 
     private void initializeView() {
+
     }
 
     private void setupEventListeners() {
@@ -51,6 +52,43 @@ public class HealthcareController {
                 handleSaveData();
             }
         });
+
+        view.setUpdateLastNameListener((patientId, newLastName) -> {
+            boolean ok = model.updatePatientLastName(patientId, newLastName);
+            if (ok) {
+                view.showSuccessMessage("Last name updated.");
+                refreshPatientsTable();
+            } else {
+                view.showErrorMessage("Patient not found.");
+            }
+
+        });
+
+        view.setUpdateContactInfoListener((patientId, phone, email, address, postcode) -> {
+            boolean ok = model.updatePatientContactInfo(patientId, phone, email, address, postcode);
+            if (ok) {
+                view.showSuccessMessage("Contact info updated.");
+                refreshPatientsTable();
+            } else {
+                view.showErrorMessage("Patient not found.");
+            }
+
+        });
+
+        view.setDeletePatientListener(patientId -> {
+            boolean ok = model.deletePatient(patientId);
+            if (ok) {
+                view.showSuccessMessage("Patient deleted.");
+                refreshPatientsTable();
+            } else {
+                view.showErrorMessage("Patient not found.");
+            }
+
+        });
+
+
+
+
     }
 
 
@@ -68,7 +106,14 @@ public class HealthcareController {
 
         model.addPatient(patient);
         view.showSuccessMessage("Patient added successfully!");
+        refreshPatientsTable();
+
     }
+
+    private void refreshPatientsTable() {
+        javax.swing.SwingUtilities.invokeLater(() -> view.reloadPatientsData());
+    }
+
 
     // ========== Data Persistence ==========
 
@@ -90,4 +135,16 @@ public class HealthcareController {
                 Date dateRegistered, String gpId
         );
     }
+    interface UpdateLastNameListener {
+        void onUpdateLastName(String patientId, String newLastName);
+    }
+
+    interface UpdateContactInfoListener {
+        void onUpdateContactInfo(String patientId, String phone, String email, String address, String postcode);
+    }
+
+    interface DeletePatientListener {
+        void onDeletePatient(String patientId);
+    }
+
 

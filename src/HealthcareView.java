@@ -20,9 +20,14 @@ public class HealthcareView extends JFrame {
 
 
 
+
     //Listener References
     private PatientListener addPatientListener;
     private Runnable onCloseListener;
+    private UpdateLastNameListener updateLastNameListener;
+    private UpdateContactInfoListener updateContactInfoListener;
+    private DeletePatientListener deletePatientListener;
+
 
 
     public HealthcareView() {
@@ -38,11 +43,13 @@ public class HealthcareView extends JFrame {
 
     public void setController(HealthcareController controller) {
         this.controller = controller;
-        loadPatientsData();
+        reloadPatientsData();
     }
 
 
     private void loadPatientsData() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-mm-dd");
+
 
         //Load patients data
         ArrayList <Patient> patients = controller.getAllPatients();
@@ -52,7 +59,7 @@ public class HealthcareView extends JFrame {
                     patient.getPatientId(),
                     patient.getFirstName(),
                     patient.getLastName(),
-                    patient.getDateOfBirth(),
+                    sdf.format(patient.getDateOfBirth()),
                     patient.getNhsNumber(),
                     patient.getGender(),
                     patient.getPhoneNumber(),
@@ -61,7 +68,38 @@ public class HealthcareView extends JFrame {
                     patient.getPostCode(),
                     patient.getEmergencyContactName(),
                     patient.getEmergencyContactNo(),
-                    patient.getDateRegistered(),
+                    sdf.format(patient.getDateRegistered()),
+                    patient.getGpId()
+            };
+            patientsTableModel.addRow(row);
+        }
+    }
+
+    public void reloadPatientsData() {
+        if (controller == null) return;
+
+
+        patientsTableModel.setRowCount(0);
+
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+        ArrayList<Patient> patients = controller.getAllPatients();
+        for (Patient patient : patients) {
+            Object[] row = {
+                    patient.getPatientId(),
+                    patient.getFirstName(),
+                    patient.getLastName(),
+                    sdf.format(patient.getDateOfBirth()),
+                    patient.getNhsNumber(),
+                    patient.getGender(),
+                    patient.getPhoneNumber(),
+                    patient.getEmail(),
+                    patient.getAddress(),
+                    patient.getPostCode(),
+                    patient.getEmergencyContactName(),
+                    patient.getEmergencyContactNo(),
+                    sdf.format(patient.getDateRegistered()),
                     patient.getGpId()
             };
             patientsTableModel.addRow(row);
@@ -69,12 +107,15 @@ public class HealthcareView extends JFrame {
     }
 
 
-    private void initComponents() {
-        tabbedPane = new JTabbedPane();
 
+
+    private void initComponents() {
+        setLayout(new BorderLayout());
+
+        tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Patients",createPatientsPanel());
 
-        add(tabbedPane);
+        add(tabbedPane,BorderLayout.CENTER);
 
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
@@ -84,12 +125,13 @@ public class HealthcareView extends JFrame {
             }
         });
     }
+
     //=================== Patient Panel ========================
     private JPanel createPatientsPanel() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        JLabel titleLabel = new JLabel("Authors");
+        JLabel titleLabel = new JLabel("Patients");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
         panel.add(titleLabel, BorderLayout.NORTH);
 
@@ -102,12 +144,24 @@ public class HealthcareView extends JFrame {
         };
 
         patientsTable = new JTable(patientsTableModel);
+        patientsTable.setFillsViewportHeight(true);
+        patientsTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+
         JScrollPane scrollPane = new JScrollPane(patientsTable);
         panel.add(scrollPane, BorderLayout.CENTER);
 
-        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT)); // ✅ create it
-        JButton addButton = new JButton("Add Patient"); // ✅ rename
+        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton addButton = new JButton("Add Patient");
         addButton.addActionListener(e -> showAddPatientDialog());
+
+        JButton updateLastNameButton = new JButton("Update Last Name");
+        updateLastNameButton.addActionListener(e -> showUpdateLastNameDialog());
+
+        JButton updateContactButton = new JButton("Update Contact Info");
+        updateContactButton.addActionListener(e -> showUpdateContactInfoDialog());
+
+        JButton deleteButton = new JButton("Delete Patient");
+        deleteButton.addActionListener(e -> handleDeletePatient());
 
         addButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -116,6 +170,9 @@ public class HealthcareView extends JFrame {
         });
 
         buttonsPanel.add(addButton);
+        buttonsPanel.add(updateLastNameButton);
+        buttonsPanel.add(updateContactButton);
+        buttonsPanel.add(deleteButton);
         panel.add(buttonsPanel, BorderLayout.SOUTH);
 
         return panel;
@@ -283,19 +340,6 @@ public class HealthcareView extends JFrame {
 
                 }
 
-                ArrayList<Patient> allPatients = controller.getAllPatients();
-                Patient newPatient = allPatients.get(allPatients.size() - 1);
-
-
-                Object[] row = {
-                        newPatient.getPatientId(),
-                        newPatient.getFirstName(),
-                        newPatient.getLastName(),
-                        newPatient.getDateOfBirth(),
-                        newPatient.getNhsNumber(),
-                        newPatient.getPhoneNumber()
-                };
-                patientsTableModel.addRow(row);
 
                 dialog.dispose();
             }
@@ -316,6 +360,102 @@ public class HealthcareView extends JFrame {
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
     }
+    private void showUpdateLastNameDialog() {
+        int row = patientsTable.getSelectedRow();
+        if (row == -1) {
+            showErrorMessage("Select a patient row.");
+            return;
+        }
+
+        String patientId = patientsTableModel.getValueAt(row, 0).toString();
+
+        String newLastName = JOptionPane.showInputDialog(this, "Enter new Last Name:");
+        if (newLastName == null) return; // cancelled
+        newLastName = newLastName.trim();
+
+        if (newLastName.isEmpty()) {
+            showErrorMessage("Last Name cannot be empty.");
+            return;
+        }
+
+        if (updateLastNameListener != null) {
+            updateLastNameListener.onUpdateLastName(patientId, newLastName);
+        }
+
+
+    }
+    private void showUpdateContactInfoDialog() {
+        int row = patientsTable.getSelectedRow();
+        if (row == -1) {
+            showErrorMessage("Select a patient row first.");
+            return;
+        }
+
+        String patientId = patientsTableModel.getValueAt(row, 0).toString();
+
+        JTextField phoneField = new JTextField(patientsTableModel.getValueAt(row, 6).toString(), 15);
+        JTextField emailField = new JTextField(patientsTableModel.getValueAt(row, 7).toString(), 15);
+        JTextField addressField = new JTextField(patientsTableModel.getValueAt(row, 8).toString(), 15);
+        JTextField postcodeField = new JTextField(patientsTableModel.getValueAt(row, 9).toString(), 15);
+
+        JPanel panel = new JPanel(new GridLayout(0, 2, 10, 10));
+        panel.add(new JLabel("Phone:"));   panel.add(phoneField);
+        panel.add(new JLabel("Email:"));   panel.add(emailField);
+        panel.add(new JLabel("Address:")); panel.add(addressField);
+        panel.add(new JLabel("Postcode:"));panel.add(postcodeField);
+
+        int result = JOptionPane.showConfirmDialog(
+                this, panel, "Update Contact Info", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE
+        );
+
+        if (result != JOptionPane.OK_OPTION) return;
+
+        String phone = phoneField.getText().trim();
+        String email = emailField.getText().trim();
+        String address = addressField.getText().trim();
+        String postcode = postcodeField.getText().trim();
+
+        if (phone.isEmpty() || email.isEmpty() || address.isEmpty() || postcode.isEmpty()) {
+            showErrorMessage("All contact fields are required.");
+            return;
+        }
+
+        if (updateContactInfoListener != null) {
+            updateContactInfoListener.onUpdateContactInfo(patientId, phone, email, address, postcode);
+        }
+
+
+
+    }
+    private void handleDeletePatient() {
+        int row = patientsTable.getSelectedRow();
+        if (row == -1) {
+            showErrorMessage("Select a patient row first.");
+            return;
+        }
+
+        String patientId = patientsTableModel.getValueAt(row, 0).toString();
+        String firstName = patientsTableModel.getValueAt(row, 1).toString();
+        String lastName  = patientsTableModel.getValueAt(row, 2).toString();
+
+        int confirm = JOptionPane.showConfirmDialog(
+                this,
+                "Delete patient " + patientId + " (" + firstName + " " + lastName + ")?",
+                "Confirm Delete",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE
+        );
+
+        if (confirm != JOptionPane.YES_OPTION) return;
+
+        if (deletePatientListener != null) {
+            deletePatientListener.onDeletePatient(patientId);
+
+        }
+    }
+
+
+
 
     // =================Listener Setters ===================
 
@@ -327,7 +467,17 @@ public class HealthcareView extends JFrame {
         this.onCloseListener = listener;
     }
 
+    public void setUpdateLastNameListener(UpdateLastNameListener listener) {
+        this.updateLastNameListener = listener;
+    }
 
+    public void setUpdateContactInfoListener(UpdateContactInfoListener listener) {
+        this.updateContactInfoListener = listener;
+    }
+
+    public void setDeletePatientListener(DeletePatientListener listener) {
+        this.deletePatientListener = listener;
+    }
 
 
 

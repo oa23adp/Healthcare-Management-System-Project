@@ -5,21 +5,42 @@ import java.util.Random;
 
 public class HealthcareModel {
     private HashMap<String, Patient> patients;
+    private HashMap<String, Clinician> clinicians;
+    private HashMap<String, Facility> facilities;
+    private HashMap<String, Appointment> appointments;
+    private HashMap<String,Prescription> prescriptions;
+
+
+
 
 
     private static final String PATIENTS_FILE = "patients.csv";
+    private static final String CLINICIANS_FILE = "clinicians.csv";
+    private static final String FACILITIES_FILE = "facilities.csv";
+    private static final String APPOINTMENTS_FILE = "appointments.csv";
+    private static final String PRESCRIPTIONS_FILE = "prescriptions.csv";
+
 
 
     public HealthcareModel() {
         patients = new HashMap<String, Patient>();
+        clinicians = new HashMap<String, Clinician>();
+        facilities = new HashMap<String, Facility>();
+        appointments = new HashMap<String, Appointment>();
+        prescriptions = new HashMap<String, Prescription>();
+
+
+        loadAllData();
     }
 
 
     public void loadAllData() {
+        loadClinicians();
         loadPatients();
     }
 
     public void saveAllData() {
+        saveClinicians();
         savePatients();
     }
 
@@ -29,7 +50,9 @@ public class HealthcareModel {
         ArrayList<String> lines = CSVHandler.readLines(PATIENTS_FILE);
         for (int i = 0; i < lines.size(); i++) {
             Patient patient = Patient.fromCSV(lines.get(i));
-            patients.put(patient.getPatientId(), patient);
+            if (patient != null) {
+                patients.put(patient.getPatientId(), patient);
+            }
         }
     }
 
@@ -49,6 +72,33 @@ public class HealthcareModel {
         savePatients();
     }
 
+    public boolean updatePatientLastName(String patientId, String newLastName) {
+        Patient p = patients.get(patientId);
+        if (p == null) return false;
+        p.setLastName(newLastName);
+        return true;
+    }
+
+    public boolean updatePatientContactInfo(String patientId, String phone, String email, String address, String postcode) {
+        Patient p = patients.get(patientId);
+        if (p == null) return false;
+
+        p.setPhoneNumber(phone);
+        p.setEmail(email);
+        p.setAddress(address);
+        p.setPostCode(postcode);
+        return true;
+    }
+
+    public boolean deletePatient(String patientId) {
+        Patient removed = patients.remove(patientId);
+        if (removed != null) {
+            savePatients(); // persist deletion immediately (optional but recommended)
+            return true;
+        }
+        return false;
+    }
+
     public ArrayList<Patient> getAllPatients() {
         return new ArrayList<Patient>(patients.values());
     }
@@ -60,4 +110,35 @@ public class HealthcareModel {
     public String generatePatientId() {
         return String.format("P%03d", patients.size() + 1);
     }
+
+
+
+    // ============== Clinician Management =================
+
+    public void loadClinicians() {
+        ArrayList<String> lines = CSVHandler.readLines(CLINICIANS_FILE);
+        for (int i = 0; i < lines.size(); i++) {
+            Clinician clinician = Clinician.fromCSV(lines.get(i));
+            if (clinician != null) {
+                clinicians.put(clinician.getClinicianId(), clinician);
+            }
+        }
+    }
+
+    public void saveClinicians() {
+        ArrayList<String> lines = new ArrayList<String>();
+        ArrayList<Clinician> clinicianList = new ArrayList<Clinician>(clinicians.values());
+
+        for (int i = 0; i < clinicianList.size(); i++) {
+            lines.add(clinicianList.get(i).toCSV());
+        }
+
+        CSVHandler.writeLines(CLINICIANS_FILE, lines);
+    }
+
+    public void addClinician(Clinician clinician) {
+        clinicians.put(clinician.getClinicianId(), clinician);
+        savePatients();
+    }
+
 }
