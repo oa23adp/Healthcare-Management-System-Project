@@ -165,5 +165,5 @@ public class HealthcareModel {
 
     public ArrayList<Clinician> getAllClinicians() {
         return new ArrayList<>(clinicians.values());
-
+    }
 }
