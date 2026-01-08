@@ -1,4 +1,6 @@
-import java.text.SimpleDateFormat;
+package Model;
+
+import CSVPackage.*;
 
 public class Facility {
     private String facilityID;
@@ -117,18 +119,7 @@ public class Facility {
         this.specialitiesOffered = specialitiesOffered;
     }
 
-//
-//    public void updateCapacity(int newCapacity) {
-//
-//    }
-//
-//    public void addSpeciality(String oldSpeciality, String newSpeciality) {
-//
-//    }
-//
-//    public String displayFacilityInfo() {
-//
-//    }
+
 
     public String toCSV() { return facilityID + "," + name + "," + type + "," + address + "," + postCode + "," + phone + "," +
             email + "," + openingHours + "," + managerHours + "," + capacity + "," + specialitiesOffered; }
@@ -141,7 +132,7 @@ public class Facility {
 
     @Override
     public String toString() {
-        return "Facility{" +
+        return "Model.Facility{" +
                 "facilityID='" + facilityID + '\'' +
                 ", name='" + name + '\'' +
                 ", type='" + type + '\'' +

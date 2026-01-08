@@ -1,7 +1,10 @@
+package Model;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import CSVPackage.*;
 
 
 public class Patient extends Person {
@@ -113,23 +116,6 @@ public class Patient extends Person {
     }
 
 
-//    public void updateAddress(String newAddress, String newPostCode) {
-//        this.address = newAddress;
-//        this.postCode = newPostCode;
-//    }
-//
-//    public void updateEmergencyContact(String newName, String newContactNo) {
-//        this.emergencyContactName = newName;
-//        this.emergencyContactNo = newContactNo;
-//    }
-//
-//    public List<Prescription> viewPrescriptions(Prescription prescriptionID) {
-//        return new ArrayList<>();
-//    }
-//
-//    public void requestAppointment(Date appointmentDate, String time, String reason) {
-//
-//    }
 
     public String toCSV() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -201,7 +187,7 @@ public class Patient extends Person {
     @Override
     public String toString() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
-        return "Patient{" +
+        return "Model.Patient{" +
                 "patientId='" + patientId + '\'' +
                 ", dateOfBirth=" + sdf.format(dateOfBirth) +
                 ", nhsNumber='" + nhsNumber + '\'' +

@@ -1,7 +1,10 @@
+package Model;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.ArrayList;
 import java.util.List;
+import CSVPackage.*;
 
 
 
@@ -97,17 +100,7 @@ public class Clinician extends Person {
        this.speciality = newSpeciality;
     }
 
-//    public void updateMedicalRecords(Patient p, String details){
-//
-//    }
-//
-//    public String viewAssignedAppointments(String clinicianId){
-//
-//    }
-//
-//    public void acceptReferral(String referralId){
-//
-//    }
+
 
     public String toCSV() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -173,7 +166,7 @@ public class Clinician extends Person {
     @Override
     public String toString() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
-        return "Clinician{" +
+        return "Model.Clinician{" +
                 "clinicianId='" + clinicianId + '\'' +
                 ", firstName='" + getFirstName() + '\'' +
                 ", lastName='" + getLastName() + '\'' +

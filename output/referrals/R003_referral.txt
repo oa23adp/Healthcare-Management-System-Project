@@ -1,0 +1,27 @@
+=== REFERRAL EMAIL CONTENT (SIMULATED) ===
+Referral ID: R003
+Date: 
+
+Patient ID: P003
+Appointment ID: A012
+
+From Clinician ID: C003
+To Clinician ID: C012
+From Facility ID: S002
+To Facility ID: H002
+
+Urgency: Routine
+Reason: Chronic abdominal pain
+
+Clinical Summary:
+48-year-old male with 6-month history of epigastric pain and weight loss. Normal blood tests but symptoms persisting.
+
+Requested Investigations:
+Upper GI Endoscopy|CT Abdomen
+
+Notes:
+Model.Patient anxious about procedure
+
+Status: Pending
+Created: 
+Last Updated: 

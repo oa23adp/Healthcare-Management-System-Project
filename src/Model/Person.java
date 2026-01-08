@@ -1,3 +1,5 @@
+package Model;
+
 public class Person {
 
     private String firstName;
@@ -61,7 +63,7 @@ public class Person {
         this.setPhoneNumber(newPhoneNumber);
     }
 
-//    public Appointment viewPatientAppointment(String patientId){
+//    public Model.Appointment viewPatientAppointment(String patientId){
 //
 //    }
 //
@@ -69,7 +71,7 @@ public class Person {
 //        return null;
 //    }
 //
-//    public Referral viewPatientReferral(){
+//    public Model.Referral viewPatientReferral(){
 //        return null;
 //    }
 

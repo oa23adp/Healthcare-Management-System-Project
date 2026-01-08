@@ -1,3 +1,7 @@
+package View;
+
+import Controller.*;
+import Model.*;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -9,26 +13,30 @@ import java.util.Date;
 import java.text.SimpleDateFormat;
 
 
+
 public class HealthcareView extends JFrame {
     private HealthcareController controller;
     private JTabbedPane tabbedPane;
 
-    //Patient panel components
+    //Model.Patient panel components
     private JTable patientsTable;
     private DefaultTableModel patientsTableModel;
 
-    //Clinician panel components
+    //Model.Clinician panel components
     private JTable cliniciansTable;
     private DefaultTableModel cliniciansTableModel;
 
-    // Prescription panel components
+    // Model.Prescription panel components
     private JTable prescriptionsTable;
     private DefaultTableModel prescriptionsTableModel;
 
-    // Appointment panel components
+    // Model.Appointment panel components
     private JTable appointmentsTable;
     private DefaultTableModel appointmentsTableModel;
 
+    // Referral panel components
+    private JTable referralsTable;
+    private DefaultTableModel referralsTableModel;
 
 
 
@@ -42,7 +50,7 @@ public class HealthcareView extends JFrame {
     //Listener References
     private PatientListener addPatientListener;
     private Runnable onCloseListener;
-    private UpdateLastNameListener updateLastNameListener;
+    private LastNameListener updateLastNameListener;
     private UpdateContactInfoListener updateContactInfoListener;
     private DeletePatientListener deletePatientListener;
     private ClinicianListener addClinicianListener;
@@ -54,6 +62,10 @@ public class HealthcareView extends JFrame {
     private AddAppointmentListener addAppointmentListener;
     private UpdateAppointmentListener updateAppointmentListener;
     private DeleteAppointmentListener deleteAppointmentListener;
+    private AddReferralListener addReferralListener;
+    private UpdateReferralStatusListener updateReferralStatusListener;
+    private DeleteReferralListener deleteReferralListener;
+    private GenerateReferralEmailListener generateReferralEmailListener;
 
 
 
@@ -74,6 +86,8 @@ public class HealthcareView extends JFrame {
         reloadCliniciansData();
         reloadPrescriptionsData();
         reloadAppointmentsData();
+        reloadReferralsData();
+
 
     }
 
@@ -143,7 +157,7 @@ public class HealthcareView extends JFrame {
                         p.getPatientID(),
                         p.getClinicianID(),
                         p.getAppointmentID(),
-                        fmtDate(p.getPrescriptionDate()), // SAFE
+                        fmtDate(p.getPrescriptionDate()),
                         p.getMedicationName(),
                         p.getDosage(),
                         p.getFrequency(),
@@ -152,8 +166,8 @@ public class HealthcareView extends JFrame {
                         p.getInstructions(),
                         p.getPharmacies(),
                         p.getStatus(),
-                        fmtDate(p.getDateIssued()),        // SAFE
-                        fmtDate(p.getCollectionDate())     // SAFE
+                        fmtDate(p.getDateIssued()),
+                        fmtDate(p.getCollectionDate())
                 });
             }
         }
@@ -181,6 +195,30 @@ public class HealthcareView extends JFrame {
             });
         }
     }
+        public void reloadReferralsData() {
+            if (controller == null) return;
+
+            referralsTableModel.setRowCount(0);
+
+            for (Referral r : controller.getAllReferrals()) {
+                referralsTableModel.addRow(new Object[]{
+                        r.getReferralId(),
+                        r.getPatientID(),
+                        r.getReferredFrom(),
+                        r.getReferredTo(),
+                        r.getReferredFromFacility(),
+                        r.getReferredToFacility(),
+                        fmtDate(r.getReferredDate()),
+                        r.getUrgencyLevel(),
+                        r.getReason(),
+                        r.getStatus(),
+                        r.getAppointmentID(),
+                        fmtDate(r.getDateCreated()),
+                        fmtDate(r.getDateLastUpdated())
+                });
+            }
+        }
+
 
 
 
@@ -197,6 +235,8 @@ public class HealthcareView extends JFrame {
         tabbedPane.addTab("Clinicians", createCliniciansPanel());
         tabbedPane.addTab("Prescriptions", createPrescriptionsPanel());
         tabbedPane.addTab("Appointments", createAppointmentsPanel());
+        tabbedPane.addTab("Referrals", createReferralsPanel());
+
 
 
 
@@ -211,7 +251,7 @@ public class HealthcareView extends JFrame {
                 }
             });
         }
-        //=================== Patient Panel ========================
+        //=================== Model.Patient Panel ========================
         private JPanel createPatientsPanel() {
             JPanel panel = new JPanel(new BorderLayout(10, 10));
             panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -221,7 +261,7 @@ public class HealthcareView extends JFrame {
             panel.add(titleLabel, BorderLayout.NORTH);
 
             String[] columns = {"Patient ID", "First Name", "Last Name", "Date of Birth","NHS Number","Gender","Phone Number",
-                                "Email","Address","Postcode","Emergency contact name","Emergency contact no","Date Registered","GP ID"};
+                                "Email","Address","Postcode","Emergency contact name","Emergency contact no","Date Registered","Model.GP ID"};
             patientsTableModel = new DefaultTableModel(columns, 0) {
                 public boolean isCellEditable(int row, int column) {
                     return false;
@@ -248,11 +288,6 @@ public class HealthcareView extends JFrame {
             JButton deleteButton = new JButton("Delete Patient");
             deleteButton.addActionListener(e -> handleDeletePatient());
 
-            addButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    showAddPatientDialog();
-                }
-            });
 
             buttonsPanel.add(addButton);
             buttonsPanel.add(updateLastNameButton);
@@ -319,7 +354,7 @@ public class HealthcareView extends JFrame {
             panel.add(dateRegField);
 
 
-            panel.add(new JLabel("GP Id:"));
+            panel.add(new JLabel("Model.GP Id:"));
             JTextField gpIdField = new JTextField(15);
             panel.add(gpIdField);
 
@@ -412,7 +447,7 @@ public class HealthcareView extends JFrame {
 
                     String gpId = gpIdField.getText().trim();
                     if (gpId.isEmpty()) {
-                        showErrorMessage("GP ID is required");
+                        showErrorMessage("Model.GP ID is required");
                         return;
                     }
 
@@ -455,7 +490,7 @@ public class HealthcareView extends JFrame {
             String patientId = patientsTableModel.getValueAt(row, 0).toString();
 
             String newLastName = JOptionPane.showInputDialog(this, "Enter new Last Name:");
-            if (newLastName == null) return; // cancelled
+            if (newLastName == null) return;
             newLastName = newLastName.trim();
 
             if (newLastName.isEmpty()) {
@@ -753,7 +788,7 @@ public class HealthcareView extends JFrame {
 
 
 
-    // ================ Prescription Panel =================
+    // ================ Model.Prescription Panel =================
         private JPanel createPrescriptionsPanel() {
             JPanel panel = new JPanel(new BorderLayout(10, 10));
             panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -1053,8 +1088,7 @@ public class HealthcareView extends JFrame {
             String issuedDate = (p.getDateIssued() == null) ? "" : sdf.format(p.getDateIssued());
             String collectionDate = (p.getCollectionDate() == null) ? "" : sdf.format(p.getCollectionDate());
 
-            // Optional: pull names from model if you want (patient/clinician lookup)
-            // For now this uses IDs and the data inside the prescription.
+
 
             return ""
                     + "========================================\n"
@@ -1085,7 +1119,7 @@ public class HealthcareView extends JFrame {
 
 
 
-    //================= Appointment Panel ==================
+    //================= Model.Appointment Panel ==================
 
     private JPanel createAppointmentsPanel() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
@@ -1141,8 +1175,8 @@ public class HealthcareView extends JFrame {
         JTextField statusField = new JTextField(15);
         JTextField reasonField = new JTextField(15);
         JTextField notesField = new JTextField(15);
-        JTextField dateCreatedField = new JTextField(15);  // yyyy-MM-dd (optional)
-        JTextField lastModifiedField = new JTextField(15); // yyyy-MM-dd (optional)
+        JTextField dateCreatedField = new JTextField(15);
+        JTextField lastModifiedField = new JTextField(15);
 
         panel.add(new JLabel("Appointment ID:")); panel.add(idField);
         panel.add(new JLabel("Patient ID:")); panel.add(patientIdField);
@@ -1197,7 +1231,7 @@ public class HealthcareView extends JFrame {
             String reason = reasonField.getText().trim();
             String notes = notesField.getText().trim();
 
-            // Optional dates: if blank, default to today
+
             Date dateCreated = new Date();
             if (!dateCreatedField.getText().trim().isEmpty()) {
                 try { dateCreated = sdf.parse(dateCreatedField.getText().trim()); }
@@ -1317,6 +1351,172 @@ public class HealthcareView extends JFrame {
         }
     }
 
+    //============= Referral Panel =====================
+
+    private JPanel createReferralsPanel() {
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        referralsTableModel = new DefaultTableModel(new String[]{
+                "Referral ID", "Patient ID", "From Clinician", "To Clinician",
+                "From Facility", "To Facility", "Referred Date",
+                "Urgency", "Reason", "Status", "Appointment ID",
+                "Created", "Last Updated"
+        }, 0) {
+            public boolean isCellEditable(int row, int col) { return false; }
+        };
+
+        referralsTable = new JTable(referralsTableModel);
+        referralsTable.setFillsViewportHeight(true);
+        referralsTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+
+        panel.add(new JScrollPane(referralsTable), BorderLayout.CENTER);
+
+        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton addBtn = new JButton("Add Referral");
+        JButton statusBtn = new JButton("Update Status");
+        JButton delBtn = new JButton("Delete Referral");
+        JButton emailBtn = new JButton("Generate Email Text");
+
+        addBtn.addActionListener(e -> showAddReferralDialog());
+        statusBtn.addActionListener(e -> showUpdateReferralStatusDialog());
+        delBtn.addActionListener(e -> handleDeleteReferral());
+        emailBtn.addActionListener(e -> handleGenerateReferralEmail());
+
+        buttons.add(addBtn);
+        buttons.add(statusBtn);
+        buttons.add(delBtn);
+        buttons.add(emailBtn);
+
+        panel.add(buttons, BorderLayout.SOUTH);
+        return panel;
+    }
+    private void showAddReferralDialog() {
+        JDialog dialog = new JDialog(this, "Add Referral", true);
+
+        JPanel panel = new JPanel(new GridLayout(0, 2, 10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        JTextField patientIdField = new JTextField(15);
+        JTextField fromClinicianField = new JTextField(15);
+        JTextField toClinicianField = new JTextField(15);
+        JTextField fromFacilityField = new JTextField(15);
+        JTextField toFacilityField = new JTextField(15);
+        JTextField referredDateField = new JTextField(15);
+        JTextField urgencyField = new JTextField(15);
+        JTextField reasonField = new JTextField(15);
+        JTextField summaryField = new JTextField(15);
+        JTextField investigationsField = new JTextField(15);
+        JTextField statusField = new JTextField(15);
+        JTextField appointmentIdField = new JTextField(15);
+        JTextField notesField = new JTextField(15);
+
+        panel.add(new JLabel("Patient ID:")); panel.add(patientIdField);
+        panel.add(new JLabel("From Clinician ID:")); panel.add(fromClinicianField);
+        panel.add(new JLabel("To Clinician ID:")); panel.add(toClinicianField);
+        panel.add(new JLabel("From Facility ID:")); panel.add(fromFacilityField);
+        panel.add(new JLabel("To Facility ID:")); panel.add(toFacilityField);
+        panel.add(new JLabel("Referred Date (yyyy/MM/dd):")); panel.add(referredDateField);
+        panel.add(new JLabel("Urgency Level:")); panel.add(urgencyField);
+        panel.add(new JLabel("Reason:")); panel.add(reasonField);
+        panel.add(new JLabel("Clinical Summary:")); panel.add(summaryField);
+        panel.add(new JLabel("Requested Investigations:")); panel.add(investigationsField);
+        panel.add(new JLabel("Status:")); panel.add(statusField);
+        panel.add(new JLabel("Appointment ID:")); panel.add(appointmentIdField);
+        panel.add(new JLabel("Notes:")); panel.add(notesField);
+
+        JButton save = new JButton("Save");
+        JButton cancel = new JButton("Cancel");
+
+        save.addActionListener(e -> {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+            sdf.setLenient(false);
+
+            String patientId = patientIdField.getText().trim();
+            if (patientId.isEmpty()) { showErrorMessage("Patient ID required"); return; }
+
+            Date referredDate;
+            try { referredDate = sdf.parse(referredDateField.getText().trim()); }
+            catch (Exception ex) { showErrorMessage("Invalid referred date (yyyy/MM/dd)"); return; }
+
+            if (addReferralListener != null) {
+                addReferralListener.onAddReferral(
+                        patientId,
+                        fromClinicianField.getText().trim(),
+                        toClinicianField.getText().trim(),
+                        fromFacilityField.getText().trim(),
+                        toFacilityField.getText().trim(),
+                        referredDate,
+                        urgencyField.getText().trim(),
+                        reasonField.getText().trim(),
+                        summaryField.getText().trim(),
+                        investigationsField.getText().trim(),
+                        statusField.getText().trim(),
+                        appointmentIdField.getText().trim(),
+                        notesField.getText().trim()
+                );
+            }
+
+            dialog.dispose();
+        });
+
+        cancel.addActionListener(e -> dialog.dispose());
+
+        panel.add(save);
+        panel.add(cancel);
+
+        dialog.setContentPane(new JScrollPane(panel));
+        dialog.pack();
+        dialog.setMinimumSize(new Dimension(650, 550));
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+    }
+    private void showUpdateReferralStatusDialog() {
+        int row = referralsTable.getSelectedRow();
+        if (row == -1) { showErrorMessage("Select a referral first."); return; }
+
+        String referralId = referralsTableModel.getValueAt(row, 0).toString();
+        String newStatus = JOptionPane.showInputDialog(this, "Enter new status:");
+        if (newStatus == null) return;
+        newStatus = newStatus.trim();
+        if (newStatus.isEmpty()) { showErrorMessage("Status cannot be empty."); return; }
+
+        if (updateReferralStatusListener != null) {
+            updateReferralStatusListener.onUpdateStatus(referralId, newStatus);
+        }
+    }
+    private void handleDeleteReferral() {
+        int row = referralsTable.getSelectedRow();
+        if (row == -1) { showErrorMessage("Select a referral first."); return; }
+
+        String referralId = referralsTableModel.getValueAt(row, 0).toString();
+
+        int confirm = JOptionPane.showConfirmDialog(
+                this,
+                "Delete referral " + referralId + "?",
+                "Confirm Delete",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE
+        );
+
+        if (confirm != JOptionPane.YES_OPTION) return;
+
+        if (deleteReferralListener != null) {
+            deleteReferralListener.onDeleteReferral(referralId);
+        }
+    }
+    private void handleGenerateReferralEmail() {
+        int row = referralsTable.getSelectedRow();
+        if (row == -1) { showErrorMessage("Select a referral first."); return; }
+
+        String referralId = referralsTableModel.getValueAt(row, 0).toString();
+
+        if (generateReferralEmailListener != null) {
+            generateReferralEmailListener.onGenerateEmail(referralId);
+        }
+    }
+
+
 
 
 
@@ -1335,7 +1535,7 @@ public class HealthcareView extends JFrame {
             this.onCloseListener = listener;
         }
 
-        public void setUpdateLastNameListener(UpdateLastNameListener listener) {
+        public void setUpdateLastNameListener(LastNameListener listener) {
             this.updateLastNameListener = listener;
         }
 
@@ -1366,6 +1566,12 @@ public class HealthcareView extends JFrame {
         public void setAddAppointmentListener(AddAppointmentListener l) { this.addAppointmentListener = l; }
         public void setUpdateAppointmentListener(UpdateAppointmentListener l) { this.updateAppointmentListener = l; }
         public void setDeleteAppointmentListener(DeleteAppointmentListener l) { this.deleteAppointmentListener = l; }
+
+        public void setAddReferralListener(AddReferralListener l) { this.addReferralListener = l; }
+        public void setUpdateReferralStatusListener(UpdateReferralStatusListener l) { this.updateReferralStatusListener = l; }
+        public void setDeleteReferralListener(DeleteReferralListener l) { this.deleteReferralListener = l; }
+        public void setGenerateReferralEmailListener(GenerateReferralEmailListener l) { this.generateReferralEmailListener = l; }
+
 
 
 

@@ -1,5 +1,10 @@
+package Model;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import CSVPackage.*;
 
 public class Referral {
     private String referralId;
@@ -169,78 +174,103 @@ public class Referral {
     }
 
 
-    //    public String viewReferralInfo() {
-//
-//    }
-//
-//    public void updateReferralStatus(String newReferralStatus) {
-//
-//    }
-//
-//    public void updateUrgencyLevel(String newUrgencyLevel) {
-//
-//    }
-//
-//    public void updateReason(String newReason) {
-//
-//    }
-//
-//    public String viewReferralSummary() {
-//        return null;
-//    }
-//
-//    public String communicateWithGP(String fromClinicianId, String toClinicianId, String message) {
-//        return null;
-//    }
 
-    public String toCSV() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
-        return referralId + "," + patientID + "," + referredFrom + "," + referredTo + "," + referredFromFacility + "," + referredToFacility + "," +
-                sdf.format(referredDate) + "," + urgencyLevel + "," + reason + "," + clinicalSummary + "," + requestedInvenstigations + "," + status + ","
-                + appointmentID + "," + notes + "," + sdf.format(dateCreated) + "," + sdf.format(dateLastUpdated) + "\n";
+    private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd");
+
+    private static String fmt(Date d) {
+        return d == null ? "" : SDF.format(d);
     }
 
-    public static Referral fromCSV(String csv) {
+    private static Date parseDate(String s) {
+        if (s == null) return null;
+        s = s.trim();
+        if (s.isEmpty()) return null;
+
+        String[] patterns = {
+                "yyyy-MM-dd",
+                "yyyy/MM/dd"
+        };
+
+        for (String p : patterns) {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat(p);
+                sdf.setLenient(false);
+                return sdf.parse(s);
+            } catch (Exception ignored) {}
+        }
+
+        return null;
+    }
+
+    private static String safe(String s) {
+        return s == null ? "" : s;
+    }
+
+
+    public static String csvHeader() {
+        return CSVHandler.toLine(List.of(
+                "referral_id","patient_id","referred_from","referred_to",
+                "referred_from_facility","referred_to_facility","referred_date",
+                "urgency_level","reason","clinical_summary","requested_investigations",
+                "status","appointment_id","notes","date_created","date_last_updated"
+        ));
+    }
+
+    public String toCSV() {
+
+        List<String> fields = new ArrayList<>();
+        fields.add(safe(referralId));
+        fields.add(safe(patientID));
+        fields.add(safe(referredFrom));
+        fields.add(safe(referredTo));
+        fields.add(safe(referredFromFacility));
+        fields.add(safe(referredToFacility));
+        fields.add(fmt(referredDate));
+        fields.add(safe(urgencyLevel));
+        fields.add(safe(reason));
+        fields.add(safe(clinicalSummary));
+        fields.add(safe(requestedInvenstigations));
+        fields.add(safe(status));
+        fields.add(safe(appointmentID));
+        fields.add(safe(notes));
+        fields.add(fmt(dateCreated));
+        fields.add(fmt(dateLastUpdated));
+
+        return CSVHandler.toLine(fields);
+    }
+
+    public static Referral fromCSV(String line) {
         try {
-            String[] parts = csv.split(",");
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+            List<String> parts = CSVHandler.parseLine(line);
 
+            if (parts.size() < 16) return null;
 
-            Date referredDate = sdf.parse(parts[6]);
-            Date dateCreated = sdf.parse(parts[14]);
-            Date dateLastUpdated = sdf.parse(parts[15]);
+            Date referredDate = parseDate(parts.get(6));
+            Date dateCreated = parseDate(parts.get(14));
+            Date dateLastUpdated = parseDate(parts.get(15));
 
-            return new Referral(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5], referredDate, parts[7],
-                    parts[8], parts[9], parts[10], parts[11], parts[12], parts[13], dateCreated, dateLastUpdated);
+            return new Referral(
+                    parts.get(0),  // referralId
+                    parts.get(1),  // patientID
+                    parts.get(2),  // referredFrom
+                    parts.get(3),  // referredTo
+                    parts.get(4),  // referredFromFacility
+                    parts.get(5),  // referredToFacility
+                    referredDate,
+                    parts.get(7),  // urgencyLevel
+                    parts.get(8),  // reason
+                    parts.get(9),  // clinicalSummary
+                    parts.get(10), // requestedInvestigations
+                    parts.get(11), // status
+                    parts.get(12), // appointmentID
+                    parts.get(13), // notes
+                    dateCreated,
+                    dateLastUpdated
+            );
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
 
 
-    }
-
-    @Override
-    public String toString() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
-
-        return "Referral{" +
-                "referralId='" + referralId + '\'' +
-                ", patientID='" + patientID + '\'' +
-                ", referredFrom='" + referredFrom + '\'' +
-                ", referredTo='" + referredTo + '\'' +
-                ", referredFromFacility='" + referredFromFacility + '\'' +
-                ", referredToFacility='" + referredToFacility + '\'' +
-                ", referredDate=" + sdf.format(referredDate) +
-                ", urgencyLevel='" + urgencyLevel + '\'' +
-                ", reason='" + reason + '\'' +
-                ", clinicalSummary='" + clinicalSummary + '\'' +
-                ", requestedInvenstigations='" + requestedInvenstigations + '\'' +
-                ", status='" + status + '\'' +
-                ", appointmentID='" + appointmentID + '\'' +
-                ", notes='" + notes + '\'' +
-                ", dateCreated=" + sdf.format(dateCreated) +
-                ", dateLastUpdated=" + sdf.format(dateLastUpdated) +
-                '}';
-    }
-}
+}}

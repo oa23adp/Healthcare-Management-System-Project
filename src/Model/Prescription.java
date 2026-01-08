@@ -1,7 +1,10 @@
+package Model;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.ArrayList;
 import java.util.List;
+import CSVPackage.*;
 
 
 public class Prescription {
@@ -160,18 +163,7 @@ public class Prescription {
         this.collectionDate = collectionDate;
     }
 
-//
-//    public void calculateEndDate(){
-//
-//    }
-//
-//    public void updateStatus(String newStatus){
-//
-//    }
-//
-//    public String viewPrescription(){
-//
-//    }
+
 
     public String toCSV() {
         List<String> fields = new ArrayList<>();
@@ -274,7 +266,7 @@ public class Prescription {
     @Override
     public String toString() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
-        return "Prescription{" +
+        return "Model.Prescription{" +
                 "prescriptionID='" + prescriptionID + '\'' +
                 ", patientID='" + patientID + '\'' +
                 ", clinicianID='" + clinicianID + '\'' +

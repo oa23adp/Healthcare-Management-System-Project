@@ -1,3 +1,7 @@
+import Controller.HealthcareController;
+import Model.HealthcareModel;
+import View.HealthcareView;
+
 import javax.swing.*;
 
 public class HealthcareApplication {

@@ -1,5 +1,8 @@
+package Model;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import CSVPackage.*;
 
 public class AdminStaff extends Person {
     private String staffId;
@@ -89,26 +92,6 @@ public class AdminStaff extends Person {
         this.accessLevel = accessLevel;
     }
 
-    //    public void registerNewPatient(Patient p){
-//
-//    }
-//
-//    public void removePatient(String patientID){
-//
-//    }
-//
-//    public void modifyStaffDetails(){
-//
-//    }
-//
-//    public Boolean checkSystemForPatient(String patientID){
-//
-//    }
-//
-//
-//    public void updatePatientRecord(String patientID, String details){
-//
-//    }
 
     public String toCSV() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
@@ -135,7 +118,7 @@ public class AdminStaff extends Person {
     @Override
     public String toString() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
-        return "AdminStaff{" +
+        return "Model.AdminStaff{" +
                 "staffId='" + staffId + '\'' +
                 ", firstName='" + getFirstName() + '\'' +
                 ", lastName='" + getLastName() + '\'' +

@@ -1,5 +1,8 @@
+package Model;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import CSVPackage.*;
 
 
 public class Appointment {
@@ -138,17 +141,6 @@ public class Appointment {
         this.lastModified = lastModified;
     }
 
-//    public void updateStatus(String newStatus) {
-//        this.status = newStatus;
-//    }
-//
-//    public void rescheduleAppointment(Date newDate, String newTime) {
-//
-//    }
-//
-//    public void addNotes(String newNotes) {
-//        this.notes = newNotes;
-//    }
 
 
     public String toCSV() {
@@ -216,7 +208,7 @@ public class Appointment {
     @Override
     public String toString() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
-        return "Appointment{" +
+        return "Model.Appointment{" +
                 "appointmentId='" + appointmentId + '\'' +
                 ", patientId='" + patientId + '\'' +
                 ", clinicianId='" + clinicianId + '\'' +

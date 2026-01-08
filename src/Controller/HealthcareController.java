@@ -1,5 +1,7 @@
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+package Controller;
+import View.*;
+import Model.*;
+
 import java.util.Date;
 import java.util.ArrayList;
 
@@ -10,8 +12,7 @@ public class HealthcareController {
     public HealthcareController(HealthcareModel model, HealthcareView view) {
         this.model = model;
         this.view = view;
-
-
+        this.view.setController(this);
 
         initializeView();
         setupEventListeners();
@@ -38,12 +39,12 @@ public class HealthcareController {
                     String emergencyContactNo,
                     Date dateRegistered,
                     String gpId
-            ){
-            handleAddPatient(firstName, lastName, dateOfBirth, nhsNumber, gender,
-                             phoneNumber, email, address, postcode,
-                             emergencyContactName, emergencyContactNo,
-                             dateRegistered, gpId);
-        }
+            ) {
+                handleAddPatient(firstName, lastName, dateOfBirth, nhsNumber, gender,
+                        phoneNumber, email, address, postcode,
+                        emergencyContactName, emergencyContactNo,
+                        dateRegistered, gpId);
+            }
         });
 
         view.setOnCloseListener(new Runnable() {
@@ -59,7 +60,7 @@ public class HealthcareController {
                 view.showSuccessMessage("Last name updated.");
                 refreshPatientsTable();
             } else {
-                view.showErrorMessage("Patient not found.");
+                view.showErrorMessage("Model.Patient not found.");
             }
 
         });
@@ -70,7 +71,7 @@ public class HealthcareController {
                 view.showSuccessMessage("Contact info updated.");
                 refreshPatientsTable();
             } else {
-                view.showErrorMessage("Patient not found.");
+                view.showErrorMessage("Model.Patient not found.");
             }
 
         });
@@ -78,37 +79,37 @@ public class HealthcareController {
         view.setDeletePatientListener(patientId -> {
             boolean ok = model.deletePatient(patientId);
             if (ok) {
-                view.showSuccessMessage("Patient deleted.");
+                view.showSuccessMessage("Model.Patient deleted.");
                 refreshPatientsTable();
             } else {
-                view.showErrorMessage("Patient not found.");
+                view.showErrorMessage("Model.Patient not found.");
             }
 
         });
 
         view.setAddClinicianListener((id, first, last, title, spec, gmc, phone, email, wid, wtype, status, startDate) -> {
             model.addClinician(new Clinician(id, first, last, title, spec, gmc, phone, email, wid, wtype, status, startDate));
-            view.showSuccessMessage("Clinician added successfully!");
+            view.showSuccessMessage("Model.Clinician added successfully!");
             view.reloadCliniciansData();
         });
 
         view.setUpdateClinicianListener((id, first, last, title, spec, gmc, phone, email, wid, wtype, status, startDate) -> {
             boolean ok = model.updateClinician(id, new Clinician(id, first, last, title, spec, gmc, phone, email, wid, wtype, status, startDate));
             if (ok) {
-                view.showSuccessMessage("Clinician updated.");
+                view.showSuccessMessage("Model.Clinician updated.");
                 view.reloadCliniciansData();
             } else {
-                view.showErrorMessage("Clinician not found.");
+                view.showErrorMessage("Model.Clinician not found.");
             }
         });
 
         view.setDeleteClinicianListener(id -> {
             boolean ok = model.deleteClinician(id);
             if (ok) {
-                view.showSuccessMessage("Clinician deleted.");
+                view.showSuccessMessage("Model.Clinician deleted.");
                 view.reloadCliniciansData();
             } else {
-                view.showErrorMessage("Clinician not found.");
+                view.showErrorMessage("Model.Clinician not found.");
             }
         });
 
@@ -123,7 +124,7 @@ public class HealthcareController {
                     instructions, pharmacies, status, dateIssued, collectionDate
             ));
 
-            view.showSuccessMessage("Prescription added successfully!");
+            view.showSuccessMessage("Model.Prescription added successfully!");
             view.reloadPrescriptionsData();
         });
 
@@ -138,20 +139,20 @@ public class HealthcareController {
             ));
 
             if (ok) {
-                view.showSuccessMessage("Prescription updated.");
+                view.showSuccessMessage("Model.Prescription updated.");
                 view.reloadPrescriptionsData();
             } else {
-                view.showErrorMessage("Prescription not found.");
+                view.showErrorMessage("Model.Prescription not found.");
             }
         });
 
         view.setDeletePrescriptionListener(id -> {
             boolean ok = model.deletePrescription(id);
             if (ok) {
-                view.showSuccessMessage("Prescription deleted.");
+                view.showSuccessMessage("Model.Prescription deleted.");
                 view.reloadPrescriptionsData();
             } else {
-                view.showErrorMessage("Prescription not found.");
+                view.showErrorMessage("Model.Prescription not found.");
             }
         });
 
@@ -167,7 +168,7 @@ public class HealthcareController {
                     dateCreated, lastModified
             ));
 
-            view.showSuccessMessage("Appointment added successfully!");
+            view.showSuccessMessage("Model.Appointment added successfully!");
             view.reloadAppointmentsData();
         });
 
@@ -184,43 +185,97 @@ public class HealthcareController {
             ));
 
             if (ok) {
-                view.showSuccessMessage("Appointment updated.");
+                view.showSuccessMessage("Model.Appointment updated.");
                 view.reloadAppointmentsData();
             } else {
-                view.showErrorMessage("Appointment not found.");
+                view.showErrorMessage("Model.Appointment not found.");
             }
         });
 
         view.setDeleteAppointmentListener(id -> {
             boolean ok = model.deleteAppointment(id);
             if (ok) {
-                view.showSuccessMessage("Appointment deleted.");
+                view.showSuccessMessage("Model.Appointment deleted.");
                 view.reloadAppointmentsData();
             } else {
-                view.showErrorMessage("Appointment not found.");
+                view.showErrorMessage("Model.Appointment not found.");
             }
         });
 
+
+        view.setAddReferralListener((patientId, fromClinician, toClinician,
+                                     fromFacility, toFacility, referredDate,
+                                     urgency, reason, summary, investigations,
+                                     status, appointmentId, notes) -> {
+
+            Referral r = new Referral(
+                    null,
+                    patientId,
+                    fromClinician,
+                    toClinician,
+                    fromFacility,
+                    toFacility,
+                    referredDate,
+                    urgency,
+                    reason,
+                    summary,
+                    investigations,
+                    status,
+                    appointmentId,
+                    notes,
+                    new Date(),           // dateCreated
+                    new Date()            // dateLastUpdated
+            );
+
+            model.addReferral(r);
+            view.showSuccessMessage("Referral added.");
+            view.reloadReferralsData();
+        });
+
+        view.setUpdateReferralStatusListener((referralId, newStatus) -> {
+            boolean ok = model.updateReferralStatus(referralId, newStatus);
+            if (ok) {
+                view.showSuccessMessage("Referral status updated.");
+                view.reloadReferralsData();
+            } else {
+                view.showErrorMessage("Referral not found.");
+            }
+        });
+
+        view.setDeleteReferralListener(referralId -> {
+            boolean ok = model.deleteReferral(referralId);
+            if (ok) {
+                view.showSuccessMessage("Referral deleted.");
+                view.reloadReferralsData();
+            } else {
+                view.showErrorMessage("Referral not found.");
+            }
+        });
+
+        view.setGenerateReferralEmailListener(referralId -> {
+            model.generateReferralEmailText(referralId);
+            view.showSuccessMessage("Referral email text generated in output/referrals.");
+        });
 
 
 
     }
 
 
-    //=============== Patient Handlers =============
+    //=============== Model.Patient Handlers =============
 
     private void handleAddPatient(String firstName, String lastName, Date dateOfBirth, String nhsNumber, String gender,
-            String phoneNumber, String email, String address, String postCode, String emergencyContactName, String emergencyContactNo, Date dateRegistered, String gpId
+                                  String phoneNumber, String email, String address, String postCode, String emergencyContactName, String emergencyContactNo, Date dateRegistered, String gpId
     ) {
 
-        String patientId = model.generatePatientId(); // e.g. P001
+        String patientId = model.generatePatientId();
 
         Patient patient = new Patient(patientId, firstName, lastName, dateOfBirth, nhsNumber, gender,
                 phoneNumber, email, address, postCode, emergencyContactName, emergencyContactNo, dateRegistered, gpId
         );
 
         model.addPatient(patient);
-        view.showSuccessMessage("Patient added successfully!");
+        view.showSuccessMessage("Model.Patient added successfully!");
         refreshPatientsTable();
 
     }
@@ -236,8 +291,6 @@ public class HealthcareController {
     private void refreshAppointmentsTable() {
         javax.swing.SwingUtilities.invokeLater(() -> view.reloadAppointmentsData());
     }
-
-
 
 
     // ========== Data Persistence ==========
@@ -268,84 +321,12 @@ public class HealthcareController {
         return model.getAllAppointments();
     }
 
-
-
+    public ArrayList<Referral> getAllReferrals() {
+        return model.getAllReferrals();
+    }
 
 
 }
-
-
-    interface PatientListener {
-        void onAddPatient(String firstName, String lastName, Date dateOfBirth, String nhsNumber, String gender,
-                String phoneNumber, String email, String address, String postcode, String emergencyContactName, String emergencyContactNo,
-                Date dateRegistered, String gpId
-        );
-    }
-    interface UpdateLastNameListener {
-        void onUpdateLastName(String patientId, String newLastName);
-    }
-
-    interface UpdateContactInfoListener {
-        void onUpdateContactInfo(String patientId, String phone, String email, String address, String postcode);
-    }
-
-    interface DeletePatientListener {
-        void onDeletePatient(String patientId);
-    }
-
-
-    interface ClinicianListener {
-        void onAddClinician(String clinicianId, String firstName, String lastName, String title,
-                            String speciality, String gmcNo, String phoneNumber, String email,
-                            String workplaceId, String workplaceType, String employmentStatus, Date startDate);
-    }
-
-    interface ClinicianUpdateListener {
-        void onUpdateClinician(String clinicianId, String firstName, String lastName, String title,
-                               String speciality, String gmcNo, String phoneNumber, String email,
-                               String workplaceId, String workplaceType, String employmentStatus, Date startDate);
-    }
-
-    interface ClinicianDeleteListener {
-        void onDeleteClinician(String clinicianId);
-    }
-
-    interface AddPrescriptionListener {
-        void onAddPrescription(String id, String patientId, String clinicianId, String appointmentId,
-                               Date prescriptionDate, String medicationName, String dosage, String frequency,
-                               int durationDays, String quantity, String instructions, String pharmacies,
-                               String status, Date dateIssued, Date collectionDate);
-    }
-
-    interface UpdatePrescriptionListener {
-        void onUpdatePrescription(String id, String patientId, String clinicianId, String appointmentId,
-                                  Date prescriptionDate, String medicationName, String dosage, String frequency,
-                                  int durationDays, String quantity, String instructions, String pharmacies,
-                                  String status, Date dateIssued, Date collectionDate);
-    }
-
-    interface DeletePrescriptionListener {
-        void onDeletePrescription(String prescriptionId);
-    }
-
-    interface AddAppointmentListener {
-        void onAddAppointment(String id, String patientId, String clinicianId, String facilityId,
-                              Date appointmentDate, String appointmentTime, int durationMinutes,
-                              String appointmentType, String status, String reason, String notes,
-                              Date dateCreated, Date lastModified);
-    }
-
-    interface UpdateAppointmentListener {
-        void onUpdateAppointment(String id, String patientId, String clinicianId, String facilityId,
-                                 Date appointmentDate, String appointmentTime, int durationMinutes,
-                                 String appointmentType, String status, String reason, String notes,
-                                 Date dateCreated, Date lastModified);
-    }
-
-    interface DeleteAppointmentListener {
-        void onDeleteAppointment(String id);
-    }
-
 
 
 

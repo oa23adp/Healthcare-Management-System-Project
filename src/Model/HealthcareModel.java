@@ -1,6 +1,8 @@
+package Model;
+
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Random;
+import CSVPackage.*;
 
 
 public class HealthcareModel {
@@ -8,7 +10,9 @@ public class HealthcareModel {
     private HashMap<String, Clinician> clinicians;
     private HashMap<String, Facility> facilities;
     private HashMap<String, Appointment> appointments;
-    private HashMap<String,Prescription> prescriptions;
+    private HashMap<String, Prescription> prescriptions;
+    private ReferralManager referralManager;
+
 
 
 
@@ -28,6 +32,8 @@ public class HealthcareModel {
         facilities = new HashMap<String, Facility>();
         appointments = new HashMap<String, Appointment>();
         prescriptions = new HashMap<String, Prescription>();
+        referralManager = ReferralManager.getInstance();
+
 
 
         loadAllData();
@@ -39,6 +45,7 @@ public class HealthcareModel {
         loadPatients();
         loadPrescriptions();
         loadAppointments();
+        referralManager.loadReferrals();
 
     }
 
@@ -47,10 +54,11 @@ public class HealthcareModel {
         savePatients();
         savePrescriptions();
         saveAppointments();
+        referralManager.saveReferrals();
     }
 
 
-    //  =============== Patient Management =================
+    //  =============== Model.Patient Management =================
     public void loadPatients() {
         ArrayList<String> lines = CSVHandler.readLines(PATIENTS_FILE);
         for (int i = 0; i < lines.size(); i++) {
@@ -81,6 +89,7 @@ public class HealthcareModel {
         Patient p = patients.get(patientId);
         if (p == null) return false;
         p.setLastName(newLastName);
+        savePatients();
         return true;
     }
 
@@ -92,6 +101,7 @@ public class HealthcareModel {
         p.setEmail(email);
         p.setAddress(address);
         p.setPostCode(postcode);
+        savePatients();
         return true;
     }
 
@@ -120,7 +130,7 @@ public class HealthcareModel {
 
 
 
-    // ============== Clinician Management =================
+    // ============== Model.Clinician Management =================
 
     public void loadClinicians() {
         ArrayList<String> lines = CSVHandler.readLines(CLINICIANS_FILE);
@@ -169,7 +179,7 @@ public class HealthcareModel {
     }
 
 
-    // ============== Prescription Management =================
+    // ============== Model.Prescription Management =================
 
     public void loadPrescriptions() {
         ArrayList<String> lines = CSVHandler.readLines(PRESCRIPTIONS_FILE);
@@ -222,7 +232,7 @@ public class HealthcareModel {
 
 
 
-    // ================== Appointment Management =======================
+    // ================== Model.Appointment Management =======================
     public void loadAppointments() {
         ArrayList<String> lines = CSVHandler.readLines(APPOINTMENTS_FILE);
         for (int i = 0; i < lines.size(); i++) {
@@ -268,6 +278,38 @@ public class HealthcareModel {
     public ArrayList<Appointment> getAllAppointments() {
         return new ArrayList<>(appointments.values());
     }
+
+
+    // ================== Referral Management ==================
+
+    public ArrayList<Referral> getAllReferrals() {
+        return referralManager.getAllReferrals();
+    }
+
+    public Referral getReferralById(String referralId) {
+        return referralManager.getReferralById(referralId);
+    }
+
+    public void addReferral(Referral referral) {
+        referralManager.addReferral(referral);
+    }
+
+    public boolean deleteReferral(String referralId) {
+
+        return referralManager.deleteReferral(referralId);
+    }
+
+    public boolean updateReferralStatus(String referralId, String newStatus) {
+        return referralManager.updateReferralStatus(referralId, newStatus);
+    }
+
+    public void generateReferralEmailText(String referralId) {
+        Referral r = referralManager.getReferralById(referralId);
+        if (r != null) {
+            referralManager.writeReferralEmailText(r);
+        }
+    }
+
 
 
 
